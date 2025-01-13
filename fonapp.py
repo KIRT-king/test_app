@@ -4,6 +4,8 @@ import getpass
 import pickle
 import time
 
+from log_p import create_log
+
 
 PATH_TO_ENCODINGS_SAVE = "encodings"
 CAMERA_ID = 0
@@ -52,8 +54,11 @@ while count < max_images:
         break
 
 if kol < 0:
+    create_log("Session exit")
     import os
     os.system("gnome-session-quit --logout --no-prompt")
+else:
+    create_log("check completed")
 
 if 'cap' in globals() and cap:
     cap.release()
