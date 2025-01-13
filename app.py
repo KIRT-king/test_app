@@ -198,6 +198,3 @@ app.mainloop()
 if 'cap' in globals() and cap:
     cap.release()
 cv2.destroyAllWindows()
-
-
-print("hello world")
