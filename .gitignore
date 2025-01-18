@@ -2,3 +2,4 @@ emoji/
 encodings/
 .idea/
 test.py
+.env
