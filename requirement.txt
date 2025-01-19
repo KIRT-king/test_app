@@ -2,4 +2,6 @@ customtkinter
 opencv-python
 face-recognition
 pickle
+sqlalchemy
+asyncio
 
