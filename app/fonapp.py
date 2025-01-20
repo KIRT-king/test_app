@@ -8,7 +8,7 @@ import asyncio
 # from log_p import create_log
 
 
-PATH_TO_ENCODINGS_SAVE = "encodings"
+PATH_TO_ENCODINGS_SAVE = "../encodings"
 CAMERA_ID = 0
 
 cap = cv2.VideoCapture(CAMERA_ID)

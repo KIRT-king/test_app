@@ -21,7 +21,7 @@ FONT_SIZE_H2 = 36
 
 
 PATH_TO_EMOJI_HANDS = "resources/emoji/hands.png"
-PATH_TO_ENCODINGS_SAVE = "encodings"
+PATH_TO_ENCODINGS_SAVE = "../encodings"
 
 def exit_window():
     app.destroy()

@@ -1,5 +1,6 @@
-resources/
+resources/anti-spoof-mn3.onnx
 encodings/
+tests/
 .idea/
-test.py
+tests/test.py
 .env
