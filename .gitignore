@@ -1,4 +1,4 @@
-resources/anti-spoof-mn3.onnx
+resources/anti-spoof-mn3.onnx/
 encodings/
 tests/
 .idea/
