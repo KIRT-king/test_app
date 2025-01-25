@@ -1,7 +1,4 @@
 from datetime import datetime, timedelta
-
-from dns.resolver import resolve_at
-from fedora_third_party.cli import query
 from sqlalchemy.future import select
 
 from db.database import engine, Base, AsyncSession
