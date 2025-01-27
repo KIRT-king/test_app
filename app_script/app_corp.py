@@ -18,11 +18,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 CAMERA_ID = 0
 NAME = "SECUX"
 
-FONT_SIZE_H1 = 18
-FONT_1 = "Arial Bold"
-
-FONT_SIZE_H2 = 18
-
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PATH_TO_EMOJI_HANDS = os.path.join(CURRENT_DIR, "../resources/emoji/hands.png")
 PATH_TO_ENCODINGS_SAVE = os.path.join(CURRENT_DIR, "../encodings")
@@ -31,6 +26,21 @@ if not os.path.exists(PATH_TO_EMOJI_HANDS):
 
 corporate_app = None
 settings_app = None
+
+class Notification(ctk.CTkToplevel):
+    def __init__(self, title: str, message: str):
+        super().__init__()
+        self.title(title)
+        image = ctk.CTkImage(light_image=Image.open(f'{CURRENT_DIR}/../resources/emoji/warning.png'), dark_image=Image.open(f'{CURRENT_DIR}/../resources/emoji/warning.png'), size=(80, 80))
+        image_label = ctk.CTkLabel(self, text="", image=image)
+        label = ctk.CTkLabel(self, text=message)
+        exit_button = ctk.CTkButton(self, text="Exit", command=self.destroy)
+
+        image_label.grid(row=0, column=0, padx=15, pady=5, sticky="nsew")
+        label.grid(row=0, column=1, padx=15, pady=5, sticky="nsew")
+        exit_button.grid(row=1, column=0, columnspan=2, padx=15, pady=5, sticky="nsew") 
+
+messagebox.showerror = Notification
 
 def _user_exists(username):
     try:
@@ -59,7 +69,7 @@ def create_local_window():
     global  local_app
     local_app = ctk.CTkToplevel(main_app)
     local_app.title("Корпоративная регистрация")
-    local_app.resizable(False, False)
+    # local_app.resizable(False, False)
 
     def return_to_main():
         local_app.destroy()
@@ -99,11 +109,16 @@ def create_local_window():
                 text=True
             )
 
-            subprocess.run(
-                ["bash", "-c", f"echo -e \"{password}\\n{password}\" | passwd {username}"],
-                check=True,
-                text=True
-            )
+            process = subprocess.Popen(
+                            f"passwd {username}",
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            shell=True,
+                            text=True)
+            process.stdin.write(f"{password}\n{password}")
+            process.stdin.close()
+            process.wait()
             create_file(get_current_user(), data)
             return True
         except subprocess.CalledProcessError as e:
@@ -167,55 +182,55 @@ def create_local_window():
 
         return True
 
-    label_full_name = ctk.CTkLabel(local_app, text=f"Полное имя", font=(FONT_1, FONT_SIZE_H2))
-    label_name = ctk.CTkLabel(local_app, text=f"Имя пользователя", font=(FONT_1, FONT_SIZE_H2))
-    label_password = ctk.CTkLabel(local_app, text=f"Пароль", font=(FONT_1, FONT_SIZE_H2))
-    label_check_password = ctk.CTkLabel(local_app, text=f"Пароль(проверка)", font=(FONT_1, FONT_SIZE_H2))
-    label_info_user_inputs = ctk.CTkLabel(local_app, text=f"Поля для ввода лич. инф.", font=(FONT_1, FONT_SIZE_H2))
-    label_user_name = ctk.CTkLabel(local_app, text=f"Ваше имя", font=(FONT_1, FONT_SIZE_H2))
-    label_user_last_name = ctk.CTkLabel(local_app, text=f"Ваша фамилия", font=(FONT_1, FONT_SIZE_H2))
-    label_user_post = ctk.CTkLabel(local_app, text=f"Ваша должность", font=(FONT_1, FONT_SIZE_H2))
-    label_user_email = ctk.CTkLabel(local_app, text=f"Ваш email", font=(FONT_1, FONT_SIZE_H2))
-    label_user_phone_number = ctk.CTkLabel(local_app, text=f"Ваш номер телефона", font=(FONT_1, FONT_SIZE_H2))
+    label_full_name = ctk.CTkLabel(local_app, text=f"Полное имя")
+    label_name = ctk.CTkLabel(local_app, text=f"Имя пользователя")
+    label_password = ctk.CTkLabel(local_app, text=f"Пароль")
+    label_check_password = ctk.CTkLabel(local_app, text=f"Пароль(проверка)")
+    label_info_user_inputs = ctk.CTkLabel(local_app, text=f"Поля для ввода лич. инф.")
+    label_user_name = ctk.CTkLabel(local_app, text=f"Ваше имя")
+    label_user_last_name = ctk.CTkLabel(local_app, text=f"Ваша фамилия")
+    label_user_post = ctk.CTkLabel(local_app, text=f"Ваша должность")
+    label_user_email = ctk.CTkLabel(local_app, text=f"Ваш email")
+    label_user_phone_number = ctk.CTkLabel(local_app, text=f"Ваш номер телефона")
 
-    entry_full_name = ctk.CTkEntry(local_app, font=(FONT_1, FONT_SIZE_H2), width=500)
-    entry_name = ctk.CTkEntry(local_app, font=(FONT_1, FONT_SIZE_H2), width=500)
-    entry_password = ctk.CTkEntry(local_app, font=(FONT_1, FONT_SIZE_H2), width=500)
-    entry_check_password = ctk.CTkEntry(local_app, font=(FONT_1, FONT_SIZE_H2), width=500)
-    entry_user_name = ctk.CTkEntry(local_app, font=(FONT_1, FONT_SIZE_H2), width=500)
-    entry_user_last_name = ctk.CTkEntry(local_app, font=(FONT_1, FONT_SIZE_H2), width=500)
-    entry_user_post = ctk.CTkEntry(local_app, font=(FONT_1, FONT_SIZE_H2), width=500)
-    entry_user_email = ctk.CTkEntry(local_app, font=(FONT_1, FONT_SIZE_H2), width=500)
-    entry_user_phone_number = ctk.CTkEntry(local_app, font=(FONT_1, FONT_SIZE_H2), width=500)
+    entry_full_name = ctk.CTkEntry(local_app)
+    entry_name = ctk.CTkEntry(local_app)
+    entry_password = ctk.CTkEntry(local_app, show='*')
+    entry_check_password = ctk.CTkEntry(local_app, show='*')
+    entry_user_name = ctk.CTkEntry(local_app)
+    entry_user_last_name = ctk.CTkEntry(local_app)
+    entry_user_post = ctk.CTkEntry(local_app)
+    entry_user_email = ctk.CTkEntry(local_app)
+    entry_user_phone_number = ctk.CTkEntry(local_app)
+    local_app.grid_columnconfigure(1, weight=1)
+    label_full_name.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+    entry_full_name.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
 
-    label_full_name.grid(row=2, column=0, columnspan=2, padx=(100, 10), pady=10, sticky="w")
-    entry_full_name.grid(row=2, column=2, columnspan=2, padx=10, pady=10, sticky="w")
+    label_name.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+    entry_name.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
 
-    label_name.grid(row=3, column=0, columnspan=2, padx=(100, 10), pady=10, sticky="w")
-    entry_name.grid(row=3, column=2, columnspan=2, padx=10, pady=10, sticky="w")
+    label_password.grid(row=2, column=0, padx=10, pady=10, sticky="w")
+    entry_password.grid(row=2, column=1, padx=10, pady=10, sticky="ew")
 
-    label_password.grid(row=4, column=0, columnspan=2, padx=(100, 10), pady=10, sticky="w")
-    entry_password.grid(row=4, column=2, columnspan=2, padx=10, pady=10, sticky="w")
+    label_check_password.grid(row=3, column=0, padx=10, pady=10, sticky="w")
+    entry_check_password.grid(row=3, column=1, padx=10, pady=10, sticky="ew")
 
-    label_check_password.grid(row=5, column=0, columnspan=2, padx=(100, 10), pady=10, sticky="w")
-    entry_check_password.grid(row=5, column=2, columnspan=2, padx=10, pady=10, sticky="w")
+    label_info_user_inputs.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
-    label_info_user_inputs.grid(row=6, column=0, columnspan=2, padx=(100, 10), pady=(50, 10), sticky="w")
+    label_user_name.grid(row=5, column=0, padx=10, pady=10, sticky="w")
+    entry_user_name.grid(row=5, column=1, padx=10, pady=10, sticky="ew")
 
-    label_user_name.grid(row=7, column=0, columnspan=2, padx=(100, 10), pady=10, sticky="w")
-    entry_user_name.grid(row=7, column=2, columnspan=2, padx=10, pady=10, sticky="w")
+    label_user_last_name.grid(row=6, column=0, padx=10, pady=10, sticky="w")
+    entry_user_last_name.grid(row=6, column=1, padx=10, pady=10, sticky="ew")
 
-    label_user_last_name.grid(row=8, column=0, columnspan=2, padx=(100, 10), pady=10, sticky="w")
-    entry_user_last_name.grid(row=8, column=2, columnspan=2, padx=10, pady=10, sticky="w")
+    label_user_post.grid(row=7, column=0, padx=10, pady=10, sticky="w")
+    entry_user_post.grid(row=7, column=1, padx=10, pady=10, sticky="ew")
 
-    label_user_post.grid(row=9, column=0, columnspan=2, padx=(100, 10), pady=10, sticky="w")
-    entry_user_post.grid(row=9, column=2, columnspan=2, padx=10, pady=10, sticky="w")
+    label_user_email.grid(row=8, column=0, padx=10, pady=10, sticky="w")
+    entry_user_email.grid(row=8, column=1, padx=10, pady=10, sticky="ew")
 
-    label_user_email.grid(row=10, column=0, columnspan=2, padx=(100, 10), pady=10, sticky="w")
-    entry_user_email.grid(row=10, column=2, columnspan=2, padx=10, pady=10, sticky="w")
-
-    label_user_phone_number.grid(row=11, column=0, columnspan=2, padx=(100, 10), pady=10, sticky="w")
-    entry_user_phone_number.grid(row=11, column=2, columnspan=2, padx=10, pady=10, sticky="w")
+    label_user_phone_number.grid(row=9, column=0, padx=10, pady=10, sticky="w")
+    entry_user_phone_number.grid(row=9, column=1, padx=10, pady=10, sticky="ew")
 
     def add_user_local(full_name, username, password, check_password, user_real_name, user_last_name, user_post,
                           user_email, user_phone_number):
@@ -248,11 +263,11 @@ def create_local_window():
     bt_next = ctk.CTkButton(local_app,
                             text="Дальше",
                             command=on_button_next_page_click)
-    bt_next.grid(row=12, column=0, columnspan=2, pady=(40, 40), padx=(100, 10), sticky="nswe")
+    bt_next.grid(row=12, column=1, padx=10, pady=10, sticky="nswe")
 
-    bt_back = ctk.CTkButton(local_app, text="Назад", font=(FONT_1, FONT_SIZE_H2), command=return_to_main)
-    bt_back.grid(row=12, column=0, columnspan=2, pady=(40, 40), padx=(100, 20), sticky="nswe")
-    bt_next.grid(row=12, column=2, columnspan=2, pady=(40, 40), padx=(20, 100), sticky="nswe")
+    bt_back = ctk.CTkButton(local_app, text="Назад", command=return_to_main)
+    bt_back.grid(row=12, column=0, pady=10, padx=10, sticky="nswe")
+    # bt_next.grid(row=12, column=1, padx=10, pady=10, sticky="nswe")
 
     def second_part(username):
 
@@ -411,14 +426,14 @@ def create_corporate_window():
 
                 label = ctk.CTkLabel(confirmation_app,
                                      text="Вы уверены, что хотите сохранить изменения?",
-                                     font=(FONT_1, FONT_SIZE_H2))
+                                     )
                 btn_yes = ctk.CTkButton(confirmation_app,
                                         text="Да",
-                                        font=(FONT_1, FONT_SIZE_H2),
+                                        
                                         command=lambda: close_windows(db_user, db_user_password, db_ip, db_name))
                 btn_no = ctk.CTkButton(confirmation_app,
                                        text="Нет",
-                                       font=(FONT_1, FONT_SIZE_H2),
+                                       
                                        command=cancel_changes)
 
                 label.grid(row=0, column=0, columnspan=2, pady=20, padx=20)
@@ -428,39 +443,38 @@ def create_corporate_window():
                 messagebox.showerror("Ошибка", "Поля должны быть заполнены")
 
         label_db_user = ctk.CTkLabel(settings_app,
-                                     text = "Имя пользователя в базе данных:",
-                                     font = (FONT_1, FONT_SIZE_H2))
+                                     text = "Имя пользователя в базе данных:")
         entry_db_user = ctk.CTkEntry(settings_app,
-                                    font=(FONT_1, FONT_SIZE_H2),
+                                    
                                     placeholder_text="postgres"
                                     )
         label_db_user_password = ctk.CTkLabel(settings_app,
                                      text="Пароль пользователя в базе данных:",
-                                     font=(FONT_1, FONT_SIZE_H2))
+                                     )
         entry_db_user_password = ctk.CTkEntry(settings_app,
-                                     font=(FONT_1, FONT_SIZE_H2)
+                                     
                                      )
         label_server_ip = ctk.CTkLabel(settings_app,
                                        text="Проверка подключения:",
-                                       font=(FONT_1, FONT_SIZE_H2))
+                                       )
         entry_server_ip = ctk.CTkEntry(settings_app,
-                                       font=(FONT_1, FONT_SIZE_H2),
+                                       
                                        placeholder_text="192.168.100.59"
                                        )
         bt_server_ip = ctk.CTkButton(settings_app,
                                      width = 210,
                                      text="Проверить",
-                                     font=(FONT_1, FONT_SIZE_H2),
+                                     
                                      command=lambda : check_connection(entry_server_ip.get()))
         label_db_name = ctk.CTkLabel(settings_app,
                                      text="Название базы данных:",
-                                     font=(FONT_1, FONT_SIZE_H2))
+                                     )
         entry_db_name = ctk.CTkEntry(settings_app,
-                                     font=(FONT_1, FONT_SIZE_H2))
+                                     )
 
         bt_save_changes = ctk.CTkButton(settings_app,
                                         text="Сохранить изменения",
-                                        font=(FONT_1, FONT_SIZE_H2),
+                                        
                                         command=lambda: open_confirmation_window(entry_db_user.get(), entry_db_user_password.get(),
                                                                                  entry_server_ip.get(), entry_db_name.get())
                                         )
@@ -479,33 +493,32 @@ def create_corporate_window():
 
     settings_button = ctk.CTkButton(corporate_app,
                                     text = "Настройки ⚙️",
-                                    font = (FONT_1, FONT_SIZE_H2),
                                     command=create_settings_window)
     settings_button.grid(row=0, column=3, padx=(10, 5), pady = 30, ipadx = 5)
 
 
     #1 part
 
-    label_full_name = ctk.CTkLabel(corporate_app, text = f"Полное имя", font= (FONT_1, FONT_SIZE_H2))
-    label_name = ctk.CTkLabel(corporate_app, text = f"Имя пользователя", font= (FONT_1, FONT_SIZE_H2))
-    label_password = ctk.CTkLabel(corporate_app, text = f"Пароль", font= (FONT_1, FONT_SIZE_H2))
-    label_check_password = ctk.CTkLabel(corporate_app, text = f"Пароль(проверка)", font= (FONT_1, FONT_SIZE_H2))
-    label_info_user_inputs = ctk.CTkLabel(corporate_app, text = f"Поля для ввода лич. инф.", font= (FONT_1, FONT_SIZE_H2))
-    label_user_name = ctk.CTkLabel(corporate_app, text = f"Ваше имя", font= (FONT_1, FONT_SIZE_H2))
-    label_user_last_name = ctk.CTkLabel(corporate_app, text = f"Ваша фамилия", font= (FONT_1, FONT_SIZE_H2))
-    label_user_post = ctk.CTkLabel(corporate_app, text = f"Ваша должность", font= (FONT_1, FONT_SIZE_H2))
-    label_user_email = ctk.CTkLabel(corporate_app, text = f"Ваш email", font= (FONT_1, FONT_SIZE_H2))
-    label_user_phone_number = ctk.CTkLabel(corporate_app, text = f"Ваш номер телефона", font= (FONT_1, FONT_SIZE_H2))
+    label_full_name = ctk.CTkLabel(corporate_app, text = f"Полное имя")
+    label_name = ctk.CTkLabel(corporate_app, text = f"Имя пользователя")
+    label_password = ctk.CTkLabel(corporate_app, text = f"Пароль")
+    label_check_password = ctk.CTkLabel(corporate_app, text = f"Пароль(проверка)")
+    label_info_user_inputs = ctk.CTkLabel(corporate_app, text = f"Поля для ввода лич. инф.")
+    label_user_name = ctk.CTkLabel(corporate_app, text = f"Ваше имя")
+    label_user_last_name = ctk.CTkLabel(corporate_app, text = f"Ваша фамилия")
+    label_user_post = ctk.CTkLabel(corporate_app, text = f"Ваша должность")
+    label_user_email = ctk.CTkLabel(corporate_app, text = f"Ваш email")
+    label_user_phone_number = ctk.CTkLabel(corporate_app, text = f"Ваш номер телефона")
 
-    entry_full_name = ctk.CTkEntry(corporate_app, font= (FONT_1, FONT_SIZE_H2), width= 500)
-    entry_name = ctk.CTkEntry(corporate_app, font= (FONT_1, FONT_SIZE_H2), width= 500)
-    entry_password = ctk.CTkEntry(corporate_app, font= (FONT_1, FONT_SIZE_H2), width= 500)
-    entry_check_password = ctk.CTkEntry(corporate_app, font= (FONT_1, FONT_SIZE_H2), width= 500)
-    entry_user_name = ctk.CTkEntry(corporate_app, font= (FONT_1, FONT_SIZE_H2), width= 500)
-    entry_user_last_name = ctk.CTkEntry(corporate_app, font= (FONT_1, FONT_SIZE_H2), width= 500)
-    entry_user_post = ctk.CTkEntry(corporate_app, font= (FONT_1, FONT_SIZE_H2), width= 500)
-    entry_user_email = ctk.CTkEntry(corporate_app, font= (FONT_1, FONT_SIZE_H2), width= 500)
-    entry_user_phone_number = ctk.CTkEntry(corporate_app, font= (FONT_1, FONT_SIZE_H2), width= 500)
+    entry_full_name = ctk.CTkEntry(corporate_app, width= 500)
+    entry_name = ctk.CTkEntry(corporate_app, width= 500)
+    entry_password = ctk.CTkEntry(corporate_app, width= 500)
+    entry_check_password = ctk.CTkEntry(corporate_app, width= 500)
+    entry_user_name = ctk.CTkEntry(corporate_app, width= 500)
+    entry_user_last_name = ctk.CTkEntry(corporate_app, width= 500)
+    entry_user_post = ctk.CTkEntry(corporate_app, width= 500)
+    entry_user_email = ctk.CTkEntry(corporate_app, width= 500)
+    entry_user_phone_number = ctk.CTkEntry(corporate_app, width= 500)
 
     label_full_name.grid(row=2, column=0, columnspan=2, padx=(100, 10), pady=10, sticky="w")
     entry_full_name.grid(row=2, column=2, columnspan=2, padx=10, pady=10, sticky="w")
@@ -697,7 +710,7 @@ def create_corporate_window():
                              command=on_button_next_page_click)
     bt_next.grid(row=12, column = 0, columnspan = 2, pady= (40, 40), padx = (100, 10), sticky="nswe")
 
-    bt_back = ctk.CTkButton(corporate_app, text="Назад", font=(FONT_1, FONT_SIZE_H2), command=return_to_main)
+    bt_back = ctk.CTkButton(corporate_app, text="Назад", command=return_to_main)
     bt_back.grid(row=12, column = 0, columnspan = 2, pady = (40, 40), padx = (100, 20), sticky="nswe")
     bt_next.grid(row=12, column = 2, columnspan = 2, pady = (40, 40), padx = (20, 100), sticky="nswe")
 
@@ -785,35 +798,36 @@ def create_corporate_window():
 
 main_app = ctk.CTk()
 main_app.title("Главное окно")
-main_app.resizable(False, False)
+# main_app.resizable(False, False)
 
-global emoji_welcome
-emoji_welcome = ctk.CTkImage(
-    light_image=Image.open(PATH_TO_EMOJI_HANDS),
-    dark_image=Image.open(PATH_TO_EMOJI_HANDS),
-    size=(60, 60)
-)
+# global emoji_welcome
+# emoji_welcome = ctk.CTkImage(
+#     light_image=Image.open(PATH_TO_EMOJI_HANDS),
+#     dark_image=Image.open(PATH_TO_EMOJI_HANDS),
+#     size=(60, 60)
+# )
 
-label_emoji_welcome1 = ctk.CTkLabel(corporate_app, image=emoji_welcome, text="")
-label_emoji_welcome2 = ctk.CTkLabel(corporate_app, image=emoji_welcome, text="")
+# label_emoji_welcome1 = ctk.CTkLabel(corporate_app, image=emoji_welcome, text="")
+# label_emoji_welcome2 = ctk.CTkLabel(corporate_app, image=emoji_welcome, text="")
 
 
 label_welcome = ctk.CTkLabel(corporate_app, text=f"Добро пожаловать в настройки дистрибутива {NAME}!")
 
-label_emoji_welcome1.grid(row=1, column=0, padx=(40, 10), pady=(50, 50), sticky="e")
-label_welcome.grid(row=1, column=1, columnspan=2, padx=(10, 10), pady=(50, 50), sticky="nsew")
-label_emoji_welcome2.grid(row=1, column=3, padx=(10, 40), pady=(50, 50), sticky="w")
+# label_emoji_welcome1.grid(row=1, column=0, padx=(40, 10), pady=(50, 50), sticky="e")
+label_welcome.grid(row=1, column=0, columnspan=2, padx=(10, 10), pady=(50, 50), sticky="nsew")
+# label_emoji_welcome2.grid(row=1, column=3, padx=(10, 40), pady=(50, 50), sticky="w")
 
 label_main = ctk.CTkLabel(main_app, text="Выберите режим регистрации")
-label_main.grid(row = 2, column = 0, columnspan = 4, padx = (100, 100), pady = (20, 20))
+label_main.grid(row = 2, column = 0, columnspan = 2, padx = (100, 100), pady = (20, 20))
 
-bt_corporate = ctk.CTkButton(main_app, text="Корпоративно", font=(FONT_1, FONT_SIZE_H2), command=open_corporate)
-bt_corporate.grid(row = 3, column = 0, columnspan = 2, padx = (50, 20), pady = (20, 100), ipadx = 50)
+bt_corporate = ctk.CTkButton(main_app, text="Корпоративно", command=open_corporate)
+bt_corporate.grid(row = 3, column = 0, columnspan = 1, padx = (50, 20), pady = (20, 100), ipadx = 50)
 
-bt_local = ctk.CTkButton(main_app, text="Локально", font=(FONT_1, FONT_SIZE_H2), command=open_local)
-bt_local.grid(row = 3, column = 2, columnspan = 2, padx = (50, 20), pady = (20, 100), ipadx = 50)
+bt_local = ctk.CTkButton(main_app, text="Локально", command=open_local)
+bt_local.grid(row = 3, column = 1, columnspan = 1, padx = (50, 20), pady = (20, 100), ipadx = 50)
 
-main_app.mainloop()
+if __name__ == "__main__":
+    main_app.mainloop()
 
 if 'cap' in globals() and cap:
     cap.release()
