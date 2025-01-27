@@ -2,6 +2,7 @@ import os
 import subprocess
 import asyncio
 import re
+import pwd
 
 import customtkinter as ctk
 import cv2
@@ -17,10 +18,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 CAMERA_ID = 0
 NAME = "SECUX"
 
-FONT_SIZE_H1 = 36
+FONT_SIZE_H1 = 18
 FONT_1 = "Arial Bold"
 
-FONT_SIZE_H2 = 36
+FONT_SIZE_H2 = 18
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PATH_TO_EMOJI_HANDS = os.path.join(CURRENT_DIR, "../resources/emoji/hands.png")
@@ -30,6 +31,14 @@ if not os.path.exists(PATH_TO_EMOJI_HANDS):
 
 corporate_app = None
 settings_app = None
+
+def _user_exists(username):
+    try:
+        pwd.getpwnam(username)
+        return True
+    except KeyError:
+        return False
+
 
 def open_corporate():
     global corporate_app
@@ -238,7 +247,6 @@ def create_local_window():
 
     bt_next = ctk.CTkButton(local_app,
                             text="Дальше",
-                            font=(FONT_1, FONT_SIZE_H1),
                             command=on_button_next_page_click)
     bt_next.grid(row=12, column=0, columnspan=2, pady=(40, 40), padx=(100, 10), sticky="nswe")
 
@@ -297,7 +305,6 @@ def create_local_window():
 
                         success_label = ctk.CTkLabel(frame,
                                                      text="Фотография успешно сделана!",
-                                                     font=(FONT_1, FONT_SIZE_H1),
                                                      text_color="green")
                         success_label.grid(row=0, column=0, pady=(10, 20))
                         cap.release()
@@ -315,7 +322,6 @@ def create_local_window():
 
         settings_label = ctk.CTkLabel(frame,
                                       text="Нажмите на кнопку ниже",
-                                      font=(FONT_1, FONT_SIZE_H1),
                                       text_color="black")
         settings_label.grid(row=0, column=0, pady=(10, 20), sticky="nsew")
 
@@ -326,7 +332,6 @@ def create_local_window():
                                  width=400,
                                  height=20,
                                  text="Сканировать",
-                                 font=(FONT_1, FONT_SIZE_H1),
                                  command=toggle_camera_action)
         bt_start.grid(row=2, column=0, pady=50, sticky="nsew")
 
@@ -559,17 +564,31 @@ def create_corporate_window():
 
     def create_user_system(full_name : str, username : str, password : str, data):
         try:
-            subprocess.run(
-                ["useradd", "-m", "-c", full_name, username],
-                check=True,
-                text=True
-            )
+            if not _user_exists(username):
+                subprocess.run(
+                    ["useradd", "-m", "-c", full_name, username],
+                    check=True,
+                    text=True
+                )
+            else:
+                print("Ошибка. Пользователь существует.")
+                return False
 
-            subprocess.run(
-                ["bash", "-c", f"echo -e \"{password}\\n{password}\" | passwd {username}"],
-                check=True,
-                text=True
-            )
+            # subprocess.run(
+            #     ["bash", "-c", f"echo -e \"{password}\\n{password}\" | passwd {username}"],
+            #     check=True,
+            #     text=True
+            # )
+            process = subprocess.Popen(
+                            f"passwd {username}",
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            shell=True,
+                            text=True)
+            process.stdin.write(f"{password}\n{password}")
+            process.stdin.close()
+            process.wait()
             create_file(get_current_user(), data)
             return True
         except subprocess.CalledProcessError as e:
@@ -675,7 +694,6 @@ def create_corporate_window():
 
     bt_next = ctk.CTkButton(corporate_app,
                              text="Дальше",
-                             font=(FONT_1, FONT_SIZE_H1),
                              command=on_button_next_page_click)
     bt_next.grid(row=12, column = 0, columnspan = 2, pady= (40, 40), padx = (100, 10), sticky="nswe")
 
@@ -735,7 +753,6 @@ def create_corporate_window():
 
                         success_label = ctk.CTkLabel(frame,
                                                      text="Фотография успешно сделана!",
-                                                     font=(FONT_1, FONT_SIZE_H1),
                                                      text_color="green")
                         success_label.grid(row=0, column=0, pady=(10, 20))
                         cap.release()
@@ -753,7 +770,6 @@ def create_corporate_window():
 
         settings_label = ctk.CTkLabel(frame,
                                       text="Нажмите на кнопку ниже",
-                                      font=(FONT_1, FONT_SIZE_H1),
                                       text_color="black")
         settings_label.grid(row=0, column=0, pady=(10, 20), sticky="nsew")
 
@@ -764,7 +780,6 @@ def create_corporate_window():
                                  width=400,
                                  height=20,
                                  text="Сканировать",
-                                 font=(FONT_1, FONT_SIZE_H1),
                                  command=toggle_camera_action)
         bt_start.grid(row=2, column=0, pady=50, sticky="nsew")
 
@@ -783,14 +798,13 @@ label_emoji_welcome1 = ctk.CTkLabel(corporate_app, image=emoji_welcome, text="")
 label_emoji_welcome2 = ctk.CTkLabel(corporate_app, image=emoji_welcome, text="")
 
 
-label_welcome = ctk.CTkLabel(corporate_app, text=f"Добро пожаловать в настройки дистрибутива {NAME}!",
-                             font=(FONT_1, FONT_SIZE_H1))
+label_welcome = ctk.CTkLabel(corporate_app, text=f"Добро пожаловать в настройки дистрибутива {NAME}!")
 
 label_emoji_welcome1.grid(row=1, column=0, padx=(40, 10), pady=(50, 50), sticky="e")
 label_welcome.grid(row=1, column=1, columnspan=2, padx=(10, 10), pady=(50, 50), sticky="nsew")
 label_emoji_welcome2.grid(row=1, column=3, padx=(10, 40), pady=(50, 50), sticky="w")
 
-label_main = ctk.CTkLabel(main_app, text="Выберите режим регистрации", font=(FONT_1, FONT_SIZE_H1))
+label_main = ctk.CTkLabel(main_app, text="Выберите режим регистрации")
 label_main.grid(row = 2, column = 0, columnspan = 4, padx = (100, 100), pady = (20, 20))
 
 bt_corporate = ctk.CTkButton(main_app, text="Корпоративно", font=(FONT_1, FONT_SIZE_H2), command=open_corporate)
