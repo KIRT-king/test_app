@@ -4,6 +4,7 @@ import getpass
 import pickle
 import time
 import asyncio
+import subprocess
 
 # from log_p import create_log
 
@@ -12,6 +13,17 @@ CAMERA_ID = 0
 
 cap = cv2.VideoCapture(CAMERA_ID)
 
+def get_current_user():
+    try:
+        result = subprocess.run(['who'], stdout=subprocess.PIPE, text=True)
+        if result.stdout:
+            first_line = result.stdout.splitlines()[0]
+            username = first_line.split()[0]
+            return username
+        else:
+            raise ValueError("Can't define user.")
+    except Exception as e:
+        raise RuntimeError(f"Error during definition: {e}")
 
 async def CompareWithUser(img):
     user_name = getpass.getuser()
@@ -20,7 +32,6 @@ async def CompareWithUser(img):
     faceCurFrame = face_recognition.face_locations(img)
     encodeCurFrame = face_recognition.face_encodings(img, faceCurFrame)
     if faceCurFrame:
-        print(file_path)
         with open(file_path, "rb") as f:
             real_encodings = pickle.load(f)
         user_encoding = encodeCurFrame[0]

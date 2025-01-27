@@ -42,6 +42,8 @@ class Notification(ctk.CTkToplevel):
 
 messagebox.showerror = Notification
 
+ctk.set_widget_scaling(2.5)
+
 def _user_exists(username):
     try:
         pwd.getpwnam(username)
@@ -88,44 +90,52 @@ def create_local_window():
             raise RuntimeError(f"Error during definition: {e}")
 
     def create_file(name, data):
-        name = "user/" + name
+        import json
+        name = f"user/{name}.json"
         if not os.path.exists(name):
             try:
-                with open(name, 'w') as file:
-                    file.write(data)
+                with open(name, 'w', encoding='utf-8') as file:
+                    json.dump(data, file, ensure_ascii=False, indent=4)
                 print("File created")
                 return True
             except Exception as e:
-                print(f"File hasn't been created {e}")
+                print(f"File hasn't been created: {e}")
                 return False
         else:
             return "user_already_exists"
 
     def create_user_system(full_name : str, username : str, password : str, data):
         try:
-            subprocess.run(
-                ["useradd", "-m", "-c", full_name, username],
-                check=True,
-                text=True
-            )
+            if _user_exists(username):
+              messagebox.showerror("Error", "User already exist")
+            else:
+                subprocess.run(
+                    ["useradd", "-m", "-c", full_name, username],
+                    check=True,
+                    text=True
+                )
 
-            process = subprocess.Popen(
-                            f"passwd {username}",
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            shell=True,
-                            text=True)
-            process.stdin.write(f"{password}\n{password}")
-            process.stdin.close()
-            process.wait()
-            create_file(get_current_user(), data)
-            return True
+                process = subprocess.Popen(
+                                f"passwd {username}",
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                shell=True,
+                                text=True)
+                process.stdin.write(f"{password}\n{password}")
+                process.stdin.close()
+                process.wait()
+                if create_file(username, data) == "user_already_exists":
+                    messagebox.showerror("Ошибка", "Выбирите другое имя пользователя")
+                else:
+                    return True
         except subprocess.CalledProcessError as e:
             print(f"Ошибка при выполнении команды: {e}")
+            messagebox.showerror("User error", "Something went wrong. Try again.")
             return False
         except Exception as e:
             print(f"Непредвиденная ошибка: {e}")
+            messagebox.showerror("User error", "Something went wrong. Try again.")
             return False
 
     def check_valid_input_user_form(full_name, username, password, check_password, user_real_name, user_last_name, user_post, user_email, user_phone_number):
@@ -233,19 +243,28 @@ def create_local_window():
     entry_user_phone_number.grid(row=9, column=1, padx=10, pady=10, sticky="ew")
 
     def add_user_local(full_name, username, password, check_password, user_real_name, user_last_name, user_post,
-                          user_email, user_phone_number):
+                       user_email, user_phone_number):
         validation_result = check_valid_input_user_form(full_name, username, password, check_password, user_real_name,
                                                         user_last_name, user_post, user_email, user_phone_number)
         print(validation_result)
         if validation_result != True:
             return
-        data = f"1\n{username} {user_real_name} {user_last_name} {user_post} {user_email} {user_phone_number}"
+        data = {
+            "status_user": 0,
+            "username": username,
+            "name": user_real_name,
+            "lastname": user_last_name,
+            "post": user_post,
+            "email": user_email,
+            "phone_number": user_phone_number
+        }
+        # Убедимся, что данные передаются корректно
+        print(f"Saving data: {data}")
+
         if create_user_system(username, full_name, password, data):
             for widget in local_app.winfo_children():
                 widget.destroy()
             second_part(username)
-        else:
-            messagebox.showerror("User error", "Something went wrong. Try again.")
 
     def on_button_next_page_click():
         full_name = entry_full_name.get()
@@ -562,53 +581,52 @@ def create_corporate_window():
             raise RuntimeError(f"Error during definition: {e}")
 
     def create_file(name, data):
-        name = "user/" + name
+        import json
+        name = f"user/{name}.json"
         if not os.path.exists(name):
             try:
-                with open(name, 'w') as file:
-                    file.write(data)
+                with open(name, 'w', encoding='utf-8') as file:
+                    json.dump(data, file, ensure_ascii=False, indent=4)
                 print("File created")
                 return True
             except Exception as e:
-                print(f"File hasn't been created {e}")
+                print(f"File hasn't been created: {e}")
                 return False
         else:
             return "user_already_exists"
 
-    def create_user_system(full_name : str, username : str, password : str, data):
+    def create_user_system(full_name: str, username: str, password: str, data):
         try:
-            if not _user_exists(username):
+            if _user_exists(username):
+                messagebox.showerror("Error", "User already exist")
+            else:
                 subprocess.run(
                     ["useradd", "-m", "-c", full_name, username],
                     check=True,
                     text=True
                 )
-            else:
-                print("Ошибка. Пользователь существует.")
-                return False
 
-            # subprocess.run(
-            #     ["bash", "-c", f"echo -e \"{password}\\n{password}\" | passwd {username}"],
-            #     check=True,
-            #     text=True
-            # )
-            process = subprocess.Popen(
-                            f"passwd {username}",
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            shell=True,
-                            text=True)
-            process.stdin.write(f"{password}\n{password}")
-            process.stdin.close()
-            process.wait()
-            create_file(get_current_user(), data)
-            return True
+                process = subprocess.Popen(
+                    f"passwd {username}",
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    shell=True,
+                    text=True)
+                process.stdin.write(f"{password}\n{password}")
+                process.stdin.close()
+                process.wait()
+                if create_file(username, data) == "user_already_exists":
+                    messagebox.showerror("Ошибка", "Выбирите другое имя пользователя")
+                else:
+                    return True
         except subprocess.CalledProcessError as e:
             print(f"Ошибка при выполнении команды: {e}")
+            messagebox.showerror("User error", "Something went wrong. Try again.")
             return False
         except Exception as e:
             print(f"Непредвиденная ошибка: {e}")
+            messagebox.showerror("User error", "Something went wrong. Try again.")
             return False
 
     def check_valid_input_user_form(full_name, username, password, check_password, user_real_name, user_last_name, user_post, user_email, user_phone_number):
@@ -678,17 +696,25 @@ def create_corporate_window():
             messagebox.showerror("User error", "User already exists in the system")
         elif email_f:
             messagebox.showerror("User error", "Email already exists in the system")
+        elif _user_exists(username):
+            messagebox.showerror("Ошибка", "Выбирите другое имя пользователя")
         else:
             user_created = await create_user(username, user_real_name, user_last_name, user_post, user_email, user_phone_number)
             if user_created:
 
-                data = f"1\n{username} {user_real_name} {user_last_name} {user_post} {user_email} {user_phone_number}"
+                data = {
+                    "status_user": 1,
+                    "username": username,
+                    "name": user_real_name,
+                    "lastname": user_last_name,
+                    "post": user_post,
+                    "email": user_email,
+                    "phone_number": user_phone_number
+                }
                 if create_user_system(username, full_name, password, data):
                     for widget in corporate_app.winfo_children():
                         widget.destroy()
                     second_part(username)
-                else:
-                    messagebox.showerror("User error", "Something went wrong. Try again.")
             else:
                 messagebox.showerror("Error", "Failed to create user")
 

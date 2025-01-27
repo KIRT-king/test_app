@@ -5,6 +5,7 @@ from db.models import User
 
 
 async def main():
+    pass
     # await init_db()
     # await create_user("kirt", "1", "1", "1", "1", "1")
     # # await update_user_last_enter("kirt")

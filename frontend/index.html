@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Table</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        input {
+            padding: 5px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>User Table</h1>
+    <div>
+        <input type="text" id="usernameInput" placeholder="Enter username" />
+        <button onclick="addUser()">Add User</button>
+    </div>
+    <p class="error" id="errorMessage"></p>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Lastname</th>
+                <th>Post</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>Status</th>
+                <th>Last Check</th>
+            </tr>
+        </thead>
+        <tbody id="userTableBody">
+        </tbody>
+    </table>
+
+    <script>
+        async function addUser() {
+            const username = document.getElementById("usernameInput").value.trim();
+            const errorMessage = document.getElementById("errorMessage");
+            const tableBody = document.getElementById("userTableBody");
+
+            // Clear previous error message
+            errorMessage.textContent = "";
+
+            if (!username) {
+                errorMessage.textContent = "Please enter a username.";
+                return;
+            }
+
+            try {
+                // Make API request
+                const response = await fetch(`http://127.0.0.1:8000/users/${username}`);
+                if (!response.ok) {
+                    throw new Error("User not found.");
+                }
+
+                const user = await response.json();
+
+                // Add user to the table
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>${user.name}</td>
+                    <td>${user.lastname}</td>
+                    <td>${user.post}</td>
+                    <td>${user.email}</td>
+                    <td>${user.phone_number}</td>
+                    <td>${user.status}</td>
+                    <td>${user.last_check}</td>
+                `;
+                tableBody.appendChild(row);
+
+                // Clear input field
+                document.getElementById("usernameInput").value = "";
+            } catch (error) {
+                errorMessage.textContent = error.message;
+            }
+        }
+    </script>
+</body>
+</html>

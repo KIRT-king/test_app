@@ -1,5 +1,4 @@
 resources/anti-spoof-mn3.onnx/
-encodings/
 tests/
 .idea/
 tests/test.py
