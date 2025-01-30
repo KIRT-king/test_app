@@ -4,4 +4,4 @@ face-recognition
 pickle
 sqlalchemy
 asyncio
-
+screeninfo

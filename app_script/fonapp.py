@@ -72,12 +72,11 @@ async def main():
     else:
         # create_log("check completed")
         user_name = getpass.getuser()
-        from db.commands import update_user_last_enter
+        from db_async.commands import update_user_last_enter
         await update_user_last_enter(user_name)
 
     if 'cap' in globals() and cap:
         cap.release()
     cv2.destroyAllWindows()
 
-# Запуск асинхронной функции main
 asyncio.run(main())

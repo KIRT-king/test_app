@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from sqlalchemy.future import select
 
-from db.database import engine, Base, AsyncSession
-from db.models import User
+from db_async.database import engine, Base, AsyncSession
+from db_async.models import User
 
 async def init_db():
     async with engine.begin() as conn:

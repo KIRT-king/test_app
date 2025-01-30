@@ -1,7 +1,7 @@
 import asyncio
 
-from db.commands import init_db, create_user, get_user, delete_user, update_user_last_enter
-from db.models import User
+from db_async.commands import init_db, create_user, get_user, delete_user, update_user_last_enter
+from db_async.models import User
 
 
 async def main():
