@@ -1,7 +1,8 @@
 customtkinter
 opencv-python
+Pillow
 face-recognition
-pickle
 sqlalchemy
-asyncio
-screeninfo
+python-dotenv
+psycopg2
+
