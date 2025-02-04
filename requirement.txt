@@ -5,4 +5,7 @@ face-recognition
 sqlalchemy
 python-dotenv
 psycopg2
-
+cmake
+screeninfo
+shutil
+threading

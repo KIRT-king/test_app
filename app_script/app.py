@@ -1,9 +1,9 @@
-#TODO потестить еще больше работу json файла
-
+#TODO протестировать работу фунций определния камеры, прописать эту функцию в корпаративном окне
+import threading
 
 import customtkinter as ctk
 import cv2
-from PIL import Image, ImageTk
+from PIL import Image
 from tkinter import StringVar
 import face_recognition
 import os
@@ -13,6 +13,8 @@ import pwd
 import re
 import json
 import subprocess
+import shutil
+
 
 from language import Locale
 
@@ -26,7 +28,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
 NAME = "KIRT app"
-version = "1.2"
+version = "1.3"
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -39,28 +41,33 @@ def user_exists(username):
 
 
 def check_validation_fills(self):
-    #TODO add email address and phone number validation
-    only_english_regex_and_numbers = r"^[A-Za-z0-9]+$"
-    email_regex = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
-
+    only_english_and_numbers_pattern = r"^[A-Za-z0-9]+$"
+    password_pattern = r"^[A-Za-z\d!@#$%^&*()_+]{8,}$"
+    email_pattern = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+    phone_pattern = r"^\+\d{12}$"
     if any(not str(var.get()).strip() for var in self.entry_vars.values()):
         show_notification(self, self.lang.error, self.lang.error_fields_not_fill)
         return False
     elif (
-            not re.match(only_english_regex_and_numbers, str(self.entry_vars["system_user_name"].get())) or
-            not re.match(only_english_regex_and_numbers, str(self.entry_vars["system_user_full_name"].get())) or
-            not re.match(only_english_regex_and_numbers, str(self.entry_vars["system_password"].get()))
+            not re.match(only_english_and_numbers_pattern, str(self.entry_vars["system_user_name"].get())) or
+            not re.match(only_english_and_numbers_pattern, str(self.entry_vars["system_user_full_name"].get()))
     ):
         show_notification(self, self.lang.error, self.lang.error_only_latin_letters)
         return False
     elif len(str(self.entry_vars["system_user_name"].get())) < 3:
         show_notification(self, self.lang.error, self.lang.error_system_user_name_short)
         return False
-    elif len(str(self.entry_vars["system_password"].get())) < 8:
-        show_notification(self, self.lang.error, self.lang.error_system_password_short)
+    elif not re.match(password_pattern, str(self.entry_vars["system_password"].get())):
+        show_notification(self, self.lang.error, self.lang.error_password_incorrect_type)
         return False
     elif str(self.entry_vars["system_password"].get()) != str(self.entry_vars["system_check_password"].get()):
         show_notification(self, self.lang.error, self.lang.error_system_password_check_different)
+        return False
+    elif not re.match(email_pattern, str(self.entry_vars["real_user_email"].get())):
+        show_notification(self, self.lang.error, self.lang.error_email_incorrect_type)
+        return False
+    elif not re.match(phone_pattern, str(self.entry_vars["real_user_phone_number"].get())):
+        show_notification(self, self.lang.error, self.lang.error_phone_incorrect_type)
         return False
     return True
 
@@ -134,6 +141,54 @@ def validate_and_continue(self) -> bool:
         return False
     return True
 
+def get_linux_distro():
+    distro = ""
+    try:
+        with open("/etc/os-release") as f:
+            for line in f:
+                if line.startswith("ID="):
+                    distro = line.strip().split("=")[1].strip('"')
+                    break
+    except Exception:
+        pass
+    return distro
+
+def ensure_v4l2_ctl_installed():
+    if shutil.which("v4l2-ctl") is None:
+        distro = get_linux_distro()
+        if distro in ["arch", "manjaro"]:
+            cmd = ["sudo", "pacman", "-Sy", "--noconfirm", "v4l-utils"]
+        elif distro in ["ubuntu", "debian", "pop"]:
+            subprocess.run(["sudo", "apt-get", "update"], check=True)
+            cmd = ["sudo", "apt-get", "install", "-y", "v4l-utils"]
+        elif distro == "fedora":
+            cmd = ["sudo", "dnf", "install", "-y", "v4l-utils"]
+        else:
+            return False
+        try:
+            subprocess.run(cmd, check=True)
+        except subprocess.CalledProcessError:
+            return False
+    return True
+
+def get_camera_names(self):
+    if ensure_v4l2_ctl_installed():
+        try:
+            output = subprocess.check_output(["v4l2-ctl", "--list-devices"], text=True)
+        except Exception as e:
+            return False
+        devices = []
+        lines = output.splitlines()
+        for line in lines:
+            if line.strip() == "":
+                continue
+            if not line.startswith("\t"):
+                current_device = re.sub(r"\s*\(.*?\)", "", line.strip())
+                devices.append(current_device)
+        return devices
+    else:
+        show_notification(self, self.lang.error, self.error_with_v4l2)
+
 def center_window(child, parent):
     child.update_idletasks()
     parent.update_idletasks()
@@ -154,6 +209,9 @@ def center_window(child, parent):
 def show_notification(self, title: str, message: str):
     Notification(self, title, message)
 
+def show_progress(self, title: str, message: str):
+    LoadingWindow(self, title, message)
+
 class Notification(ctk.CTkToplevel):
     def __init__(self, parent, title: str, message: str):
         super().__init__(parent)
@@ -168,6 +226,20 @@ class Notification(ctk.CTkToplevel):
         exit_button.grid(row=1, column=0, columnspan=2, padx=15, pady=5, sticky="nsew")
         self.after(0, lambda: center_window(self, parent))
 
+class LoadingWindow(ctk.CTkToplevel):
+    def __init__(self, parent, title: str, message: str):
+        super().__init__(parent)
+        self.title(title)
+        self.protocol("WM_DELETE_WINDOW", lambda: None)
+        self.attributes("-topmost", True)
+        self.progress = ctk.CTkProgressBar(self, mode = "indeterminate")
+        self.loading_label = ctk.CTkLabel(self, text = message)
+
+        self.progress.grid(row = 0, column = 0, padx = (10, 10), pady = (10, 20))
+        self.loading_label.grid(row = 1, column = 0, padx = (10, 10), pady = (10, 10))
+        self.after(0, lambda: center_window(self, parent))
+
+        self.progress.start()
 
 class SettingsApp(ctk.CTkToplevel):
     def __init__(self, master, language_w):
@@ -175,6 +247,8 @@ class SettingsApp(ctk.CTkToplevel):
         self.language_w = language_w
         self.lang = Locale(language = language_w)
         self.title(f"{self.lang.settings_window_title}")
+        self.is_checking = False
+
         self.label_db_user = ctk.CTkLabel(self, text=self.lang.db_user_label)
         self.entry_db_user = ctk.CTkEntry(self, placeholder_text="postgres")
         self.label_db_user_password = ctk.CTkLabel(self, text=self.lang.db_user_password_label)
@@ -199,13 +273,48 @@ class SettingsApp(ctk.CTkToplevel):
 
 
     def __on_check_connection(self):
+        if self.is_checking:
+            return
+        self.is_checking = False
+        self.bt_server_ip.configure(text=self.lang.bt_checking_text, fg_color="gray", state="DISABLED")
+        self.bt_save_changes.configure(state = "DISABLED")
+        self.entry_db_user.configure(state="disabled")
+        self.entry_db_user_password.configure(state="disabled")
+        self.entry_server_ip.configure(state="disabled")
+        self.entry_db_name.configure(state="disabled")
+        self.progress_window = None
+        self.check_completed = False
+        threading.Thread(target=self.__check_connection_thread, daemon=True).start()
+        self.after(200, self.__check_show_progress)
+
+    def __check_show_progress(self):
+        if not self.check_completed:
+            self.progress_window = LoadingWindow(self, self.lang.loading, self.lang.loading_wait)
+
+    def __check_connection_thread(self):
         ip_address = self.entry_server_ip.get()
         port = 5432
         try:
             with socket.create_connection((ip_address, port), timeout=5):
-                self.bt_server_ip.configure(text=self.lang.status_active, fg_color="lime")
-        except (socket.timeout, socket.error) as e:
-            self.bt_server_ip.configure(text=self.lang.status_inactive, fg_color="#a3544e")
+                status = ("lime", self.lang.status_active)
+        except (socket.timeout, socket.error):
+            status = ("#a3544e", self.lang.status_inactive)
+
+        self.check_completed = True
+        self.after(0, self.__update_button_status, status)
+
+    def __update_button_status(self, status):
+        if self.progress_window:
+            self.progress_window.destroy()
+        color, text = status
+        self.bt_server_ip.configure(text=text, fg_color=color, state="NORMAL")
+        self.bt_save_changes.configure(state="NORMAL")
+        self.entry_db_user.configure(state="normal")
+        self.entry_db_user_password.configure(state="normal")
+        self.entry_server_ip.configure(state="normal")
+        self.entry_db_name.configure(state="normal")
+
+        self.is_checking = False
 
     def __on_save_changes(self):
         db_user = self.entry_db_user.get()
@@ -285,6 +394,11 @@ class App(ctk.CTk):
         self.cap = None
         self.type = None
         self.language = "ru"
+        self.available_cameras = get_camera_names(self)
+        if not self.available_cameras:
+            self.available_cameras = ["Нет доступных камер | There are no cameras available"]
+        self.selected_camera = StringVar(value=self.available_cameras[0])
+        self.camera_index = 0
         ctk.set_widget_scaling(self.scaling)
         ctk.set_appearance_mode("dark")
 
@@ -298,7 +412,7 @@ class App(ctk.CTk):
             "real_user_last_name": StringVar(),
             "real_user_post": StringVar(),
             "real_user_email": StringVar(),
-            "real_user_phone_number": StringVar(),
+            "real_user_phone_number": StringVar()
         }
 
         img = Image.open("images/ogon.png")
@@ -373,7 +487,7 @@ class App(ctk.CTk):
         label_system_check_password = ctk.CTkLabel(self, text=self.lang.system_check_password)
         label_info_user_inputs = ctk.CTkLabel(self, text=self.lang.info_user_inputs)
         label_real_user_name = ctk.CTkLabel(self, text=self.lang.real_user_name)
-        label_real_user_last_name = ctk.CTkLabel(self, text=self.lang.real_user_email)
+        label_real_user_last_name = ctk.CTkLabel(self, text=self.lang.real_user_last_name)
         label_real_user_post = ctk.CTkLabel(self, text=self.lang.real_user_post)
         label_real_user_email = ctk.CTkLabel(self, text=self.lang.real_user_email)
         label_real_user_phone_number = ctk.CTkLabel(self, text=self.lang.real_user_phone_number)
@@ -423,17 +537,33 @@ class App(ctk.CTk):
     def __page_second_reg_local(self):
         for widget in self.winfo_children():
             widget.destroy()
+        self.geometry("400x480")
         label_info_scan = ctk.CTkLabel(self, text = self.lang.process_scanning)
         self.image_label_cv2 = ctk.CTkLabel(self, text="")
         self.info_label_cv2 = ctk.CTkLabel(self, text="")
+        self.camera_dropdown = ctk.CTkComboBox(
+            self,
+            values=self.available_cameras,
+            variable=self.selected_camera,
+            command=self.on_camera_selected
+        )
         self.bt_start_scan = ctk.CTkButton(self, text=self.lang.begin, command=self.__toggle_camera)
         bt_previous_page = ctk.CTkButton(self, text=self.lang.previous_page, command=self.__page_first_reg_local)
 
         label_info_scan.grid(row = 0, column = 0, columnspan = 2, padx = (10, 10), pady = (10, 10))
         self.image_label_cv2.grid(row = 1, column = 0, columnspan = 2, padx = (10, 10), pady = (10, 10))
         self.info_label_cv2.grid(row = 2, column = 0, columnspan = 2, padx = (10, 10), pady = (5, 10))
-        bt_previous_page.grid(row = 3, column = 0, padx = (10, 0), pady = (10, 10))
-        self.bt_start_scan.grid(row = 3, column = 1, padx = (0, 10), pady = (10, 10))
+        self.camera_dropdown.grid(row = 3, column = 0, columnspan = 2, padx = (10, 10), pady = (10, 5), sticky = "ew")
+        bt_previous_page.grid(row = 4, column = 0, padx = (10, 0), pady = (10, 10))
+        self.bt_start_scan.grid(row = 4, column = 1, padx = (0, 10), pady = (10, 10))
+
+    def on_camera_selected(self, event=None):
+        selected = self.selected_camera.get()
+        if selected == "Нет доступных камер | There are no cameras available":
+            self.camera_index = None
+            self.info_label_cv2.configure(text = self.lang.error_no_camera, text_color="red")
+        else:
+            self.camera_index = self.available_cameras.index(selected)
 
     def __toggle_camera(self):
         if self.bt_start_scan.cget("text") == self.lang.begin:
@@ -463,7 +593,7 @@ class App(ctk.CTk):
                     self.__last_page()
 
     def __start_camera(self):
-        self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(self.camera_index)
         def update_frame():
             if self.cap is not None and self.cap.isOpened():
                 ret, frame = self.cap.read()
@@ -495,7 +625,7 @@ class App(ctk.CTk):
                         username = self.entry_vars["system_user_name"].get()
                         file_path = os.path.join("encodings", f"{username}.pkl")
                         with open(file_path, "wb") as f:
-                            pickle.dump(encoding, f)
+                            pickle.dump([encoding], f)
                         self.info_label_cv2.configure(text = self.lang.success_face_recognition, text_color="lime")
                         return True
                     elif len(face_encodings) > 1:
