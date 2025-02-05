@@ -415,7 +415,7 @@ class App(ctk.CTk):
             "real_user_phone_number": StringVar()
         }
 
-        img = Image.open("images/ogon.png")
+        img = Image.open("resources/images/ogon.png")
         img_ctk = ctk.CTkImage(light_image=img, size = (80, 80))
         img_label = ctk.CTkLabel(self, text = "", image = img_ctk)
         label_welcome = ctk.CTkLabel(self, text=f"Welcome to {NAME}")
@@ -724,7 +724,7 @@ class App(ctk.CTk):
         for widget in self.winfo_children():
             widget.destroy()
         label_last_page = ctk.CTkLabel(self, text = self.lang.last_page_label)
-        img_2 = Image.open("images/aviaseils.png")
+        img_2 = Image.open("resources/images/aviaseils.png")
         img_2_ctk = ctk.CTkImage(light_image=img_2, size=(80, 80))
         img_2_label = ctk.CTkLabel(self, text="", image=img_2_ctk)
 

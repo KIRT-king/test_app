@@ -9,3 +9,4 @@ cmake
 screeninfo
 shutil
 threading
+pyfiglet
