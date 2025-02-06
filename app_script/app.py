@@ -393,7 +393,8 @@ class App(ctk.CTk):
         self.scaling = 2
         self.cap = None
         self.type = None
-        self.language = "ru"
+        self.language = "en"
+        self.lang = Locale(language="en")
         self.available_cameras = get_camera_names(self)
         if not self.available_cameras:
             self.available_cameras = ["Нет доступных камер | There are no cameras available"]
