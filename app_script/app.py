@@ -187,7 +187,7 @@ def get_camera_names(self):
                 devices.append(current_device)
         return devices
     else:
-        show_notification(self, self.lang.error, self.error_with_v4l2)
+        show_notification(self, self.lang.error, self.lang.error_with_v4l2)
 
 def center_window(child, parent):
     child.update_idletasks()
