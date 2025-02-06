@@ -7,6 +7,4 @@ python-dotenv
 psycopg2
 cmake
 screeninfo
-shutil
-threading
 pyfiglet

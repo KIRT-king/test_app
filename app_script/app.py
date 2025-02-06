@@ -216,7 +216,7 @@ class Notification(ctk.CTkToplevel):
     def __init__(self, parent, title: str, message: str):
         super().__init__(parent)
         self.title(title)
-        image = ctk.CTkImage(light_image=Image.open(f'{CURRENT_DIR}/images/warning.png'), dark_image=Image.open(f'{CURRENT_DIR}/images/warning.png'), size=(80, 80))
+        image = ctk.CTkImage(light_image=Image.open(f'{CURRENT_DIR}/resources/images/warning.png'), dark_image=Image.open(f'{CURRENT_DIR}/resources/images/warning.png'), size=(80, 80))
         image_label = ctk.CTkLabel(self, text="", image=image)
         label = ctk.CTkLabel(self, text=message)
         exit_button = ctk.CTkButton(self, text="Exit", command=self.destroy)
@@ -537,7 +537,7 @@ class App(ctk.CTk):
     def __page_second_reg_local(self):
         for widget in self.winfo_children():
             widget.destroy()
-        self.geometry("400x480")
+        self.geometry("400x500")
         label_info_scan = ctk.CTkLabel(self, text = self.lang.process_scanning)
         self.image_label_cv2 = ctk.CTkLabel(self, text="")
         self.info_label_cv2 = ctk.CTkLabel(self, text="")
@@ -553,7 +553,7 @@ class App(ctk.CTk):
         label_info_scan.grid(row = 0, column = 0, columnspan = 2, padx = (10, 10), pady = (10, 10))
         self.image_label_cv2.grid(row = 1, column = 0, columnspan = 2, padx = (10, 10), pady = (10, 10))
         self.info_label_cv2.grid(row = 2, column = 0, columnspan = 2, padx = (10, 10), pady = (5, 10))
-        self.camera_dropdown.grid(row = 3, column = 0, columnspan = 2, padx = (10, 10), pady = (10, 5), sticky = "ew")
+        self.camera_dropdown.grid(row = 3, column = 0, columnspan = 2, padx = (10, 10), pady = (5, 5), sticky = "ew")
         bt_previous_page.grid(row = 4, column = 0, padx = (10, 0), pady = (10, 10))
         self.bt_start_scan.grid(row = 4, column = 1, padx = (0, 10), pady = (10, 10))
 
@@ -641,7 +641,7 @@ class App(ctk.CTk):
         if self.cap is not None and self.cap.isOpened():
             self.cap.release()
         self.type = "corp"
-        self.geometry("400x480")
+        self.geometry("400x500")
 
         bt_setting_server_connection = ctk.CTkButton(self, text = self.lang.settings_server_connection, command=self.__settings_server_connection)
 
@@ -708,14 +708,21 @@ class App(ctk.CTk):
         label_info_scan = ctk.CTkLabel(self, text = self.lang.process_scanning)
         self.image_label_cv2 = ctk.CTkLabel(self, text="")
         self.info_label_cv2 = ctk.CTkLabel(self, text="")
+        self.camera_dropdown = ctk.CTkComboBox(
+            self,
+            values=self.available_cameras,
+            variable=self.selected_camera,
+            command=self.on_camera_selected
+        )
         self.bt_start_scan = ctk.CTkButton(self, text=self.lang.begin, command=self.__toggle_camera)
         bt_previous_page = ctk.CTkButton(self, text=self.lang.previous_page, command=self.__page_first_reg_local)
 
         label_info_scan.grid(row = 0, column = 0, columnspan = 2, padx = (10, 10), pady = (10, 10))
         self.image_label_cv2.grid(row = 1, column = 0, columnspan = 2, padx = (10, 10), pady = (10, 10))
         self.info_label_cv2.grid(row = 2, column = 0, columnspan = 2, padx = (10, 10), pady = (5, 10))
-        bt_previous_page.grid(row = 3, column = 0, padx = (10, 0), pady = (10, 10))
-        self.bt_start_scan.grid(row = 3, column = 1, padx = (0, 10), pady = (10, 10))
+        self.camera_dropdown.grid(row=3, column=0, columnspan=2, padx=(10, 10), pady=(5, 5), sticky="ew")
+        bt_previous_page.grid(row = 4, column = 0, padx = (10, 0), pady = (10, 10))
+        self.bt_start_scan.grid(row = 4, column = 1, padx = (0, 10), pady = (10, 10))
 
     def __last_page(self):
         if self.cap is not None and self.cap.isOpened():
