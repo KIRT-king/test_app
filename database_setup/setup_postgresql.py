@@ -1,102 +1,73 @@
 import os
 import subprocess
-import psycopg2
-import configparser
-import typer
-
-app = typer.Typer()
-
-CONFIG_PATH = "db_config.ini"  # Путь к файлу конфигурации
+import time
+from sqlalchemy import create_engine
 
 
-def create_env_file(db_name: str, user: str, password: str, host: str = "localhost", port: str = "5432"):
-    env_content = f"""DB_NAME={db_name}
-DB_USER={user}
-DB_PASSWORD={password}
-DB_HOST={host}
-DB_PORT={port}
-"""
-    with open(".env", "w") as env_file:
-        env_file.write(env_content)
-
-    print(".env файл успешно создан.")
-
-
-def run_command(command: str):
-    process = subprocess.run(command, check=True, capture_output=True, text=True)
-    if process.returncode != 0:
-        typer.echo(f"Ошибка: {process.stderr}")
-    else:
-        typer.echo(process.stdout)
-
-
-def get_command_operator():
-    distro = ""
+def run_command(command):
     try:
-        with open("/etc/os-release") as f:
-            for line in f:
-                if line.startswith("ID="):
-                    distro = line.strip().split("=")[1].strip('"')
-                    break
-    except Exception:
-        pass
-    if distro in ["arch", "manjaro"]:
-        return "pacman"
-    elif distro in ["ubuntu", "debian", "pop"]:
-        return "apt-get"
-    elif distro == "fedora":
-        return "dnf"
+        subprocess.run(command, shell=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Ошибка: {e}")
+
+
+def install_docker():
+    print("🔹 Проверяем, установлен ли Docker...")
+    if subprocess.run("docker --version", shell=True).returncode != 0:
+        print("⬇️  Устанавливаем Docker...")
+        run_command("sudo apt update && sudo apt install -y docker.io")
     else:
-        return None
+        print("✅ Docker уже установлен!")
 
 
-@app.command()
-def install_postgres():
-    typer.echo("Устанавливаем PostgreSQL...")
-    cmd_operator = get_command_operator()
-    if cmd_operator is None:
-        cmd_operator = input("Введите используемый менеджер пакетов (dnf/apt-get/pacman): ")
-    run_command(f"sudo {cmd_operator} install -y postgresql postgresql-contrib")
+def install_postgres_image():
+    print("🔹 Проверяем, загружен ли образ PostgreSQL...")
+    if "postgres" not in subprocess.getoutput("docker images"):
+        print("⬇️  Загружаем образ PostgreSQL...")
+        run_command("docker pull postgres")
+    else:
+        print("✅ Образ PostgreSQL уже загружен!")
 
 
-@app.command()
-def setup_db(
-    db_name: str = typer.Option(..., prompt="Введите название базы данных"),
-    user: str = typer.Option(..., prompt="Введите имя пользователя"),
-    password: str = typer.Option(
-        ..., prompt="Введите пароль", hide_input=True, confirmation_prompt=True
-    ),
-):
+def get_user_input():
+    db_name = input("Введите имя базы данных: ")
+    user = input("Введите имя пользователя: ")
+    password = input("Введите пароль: ")
+    port = input("Введите порт (по умолчанию 5432): ") or "5432"
+    return db_name, user, password, port
+
+
+def run_postgres_container(db_name, user, password, port):
+    print("🚀 Запускаем контейнер PostgreSQL...")
+    run_command(
+        f"docker run -d --name postgresql -e POSTGRES_DB={db_name} -e POSTGRES_USER={user} -e POSTGRES_PASSWORD={password} -p {port}:5432 postgres")
+
+    print("⏳ Ожидание запуска контейнера...")
+    time.sleep(5)
+
+
+def generate_connection_string(user, password, port, db_name):
+    return f"postgresql+psycopg2://{user}:{password}@localhost:{port}/{db_name}"
+
+
+def check_connection(connection_string):
+    print("🔹 Проверяем подключение к PostgreSQL через SQLAlchemy...")
     try:
-        conn = psycopg2.connect(dbname="postgres", user="postgres", password="admin")
-        conn.autocommit = True
-        cur = conn.cursor()
-
-        cur.execute(f"CREATE DATABASE {db_name};")
-        cur.execute(f"CREATE USER {user} WITH ENCRYPTED PASSWORD '{password}';")
-        cur.execute(f"GRANT ALL PRIVILEGES ON DATABASE {db_name} TO {user};")
-
-        cur.close()
-        conn.close()
-        typer.echo(f"База данных '{db_name}' и пользователь '{user}' успешно созданы.")
-
-        config = configparser.ConfigParser()
-        config["DATABASE"] = {
-            "DB_NAME": db_name,
-            "USER": user,
-            "PASSWORD": password,
-            "HOST": "localhost",
-            "PORT": "5432"
-        }
-        with open(CONFIG_PATH, "w") as configfile:
-            config.write(configfile)
-        typer.echo(f"Конфигурационный файл '{CONFIG_PATH}' создан.")
-
-        create_env_file(db_name, user, password)
-
+        engine = create_engine(connection_string)
+        with engine.connect() as conn:
+            print("✅ Успешное подключение к базе данных!")
     except Exception as e:
-        typer.echo(f"Ошибка при настройке БД: {e}")
+        print(f"❌ Ошибка подключения: {e}")
 
 
 if __name__ == "__main__":
-    app()
+    install_docker()
+    install_postgres_image()
+
+    db_name, user, password, port = get_user_input()
+    run_postgres_container(db_name, user, password, port)
+
+    connection_string = generate_connection_string(user, password, port, db_name)
+    print(f"🔗 Ваша строка подключения: {connection_string}")
+
+    check_connection(connection_string)
