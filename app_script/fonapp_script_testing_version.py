@@ -81,15 +81,26 @@ def main():
         global PATH_TO_LOGS_SAVE
         if logs_save == "not":
             PATH_TO_LOGS_SAVE = "not"
-        elif logs_save == "default":
+        elif logs_save == "":
             PATH_TO_LOGS_SAVE = ""
 
         while count < KOL_IMAGES:
             _, img = cap.read()
             imgS = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            current_time = time.time()
             if time.time() - start_time >= INTERVAL:
                 res = CompareWithUser(imgS, user_name)
-                if res is not None:
+                if res is None:
+                    if no_face_start_time is None:
+                        no_face_start_time = current_time
+                    elif current_time - no_face_start_time >= 15:
+                        print("Блокировка: Лицо не обнаружено более 15 секунд!")
+                        if PATH_TO_LOGS_SAVE != "not":
+                            create_log(PATH_TO_LOGS_SAVE, "BLOCKED: no face detected for 15 seconds")
+                        cap.release()
+                        sys.exit()
+                else:
+                    no_face_start_time = None
                     if res[0]:
                         kol += 1
                         print("good")

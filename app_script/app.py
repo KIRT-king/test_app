@@ -255,6 +255,8 @@ class SettingsApp(ctk.CTkToplevel):
         self.entry_db_user_password = ctk.CTkEntry(self, show="*")
         self.label_server_ip = ctk.CTkLabel(self, text=self.lang.server_ip_label)
         self.entry_server_ip = ctk.CTkEntry(self, placeholder_text="192.168.100.59")
+        self.label_db_port = ctk.CTkLabel(self, text = self.lang.server_db_port)
+        self.entry_db_port = ctk.CTkEntry(self, placeholder_text="5432")
         self.bt_server_ip = ctk.CTkButton(self, text=self.lang.bt_server_ip_text, command=self.__on_check_connection)
         self.label_db_name = ctk.CTkLabel(self, text=self.lang.db_name_label)
         self.entry_db_name = ctk.CTkEntry(self)
@@ -266,10 +268,12 @@ class SettingsApp(ctk.CTkToplevel):
         self.entry_db_user_password.grid(row = 1, column = 1, sticky = "nsew", padx = (10, 10), pady = (10, 0))
         self.label_server_ip.grid(row=2, column=0, sticky="w", padx=(10, 0), pady=(10, 0))
         self.entry_server_ip.grid(row=2, column=1, sticky="nsew", padx=(10, 10), pady=(10, 0))
-        self.label_db_name.grid(row=3, column=0, sticky="w", padx=(10, 0), pady=(10, 0))
-        self.entry_db_name.grid(row=3, column=1, sticky="nsew", padx=(10, 10), pady=(10, 0))
-        self.bt_server_ip.grid(row = 4, column = 0, padx = (10, 0), pady = (15, 10))
-        self.bt_save_changes.grid(row = 4, column = 1, padx = (0, 10), pady = (15, 10))
+        self.label_db_port.grid(row=3, column=0, sticky="w", padx=(10, 0), pady=(10, 0))
+        self.entry_db_port.grid(row=3, column=1, sticky="nsew", padx=(10, 10), pady=(10, 0))
+        self.label_db_name.grid(row=4, column=0, sticky="w", padx=(10, 0), pady=(10, 0))
+        self.entry_db_name.grid(row=4, column=1, sticky="nsew", padx=(10, 10), pady=(10, 0))
+        self.bt_server_ip.grid(row = 5, column = 0, padx = (10, 0), pady = (15, 10))
+        self.bt_save_changes.grid(row = 5, column = 1, padx = (0, 10), pady = (15, 10))
 
 
     def __on_check_connection(self):
@@ -293,7 +297,7 @@ class SettingsApp(ctk.CTkToplevel):
 
     def __check_connection_thread(self):
         ip_address = self.entry_server_ip.get()
-        port = 5432
+        port = self.entry_db_port.get()
         try:
             with socket.create_connection((ip_address, port), timeout=5):
                 status = ("lime", self.lang.status_active)
@@ -320,10 +324,11 @@ class SettingsApp(ctk.CTkToplevel):
         db_user = self.entry_db_user.get()
         db_user_password = self.entry_db_user_password.get()
         db_ip = self.entry_server_ip.get()
+        db_port = self.entry_db_port.get()
         db_name = self.entry_db_name.get()
 
-        if db_user and db_user_password and db_ip and db_name:
-            self.__open_confirmation_window(db_user, db_user_password, db_ip, db_name)
+        if db_user and db_user_password and db_ip and db_port and db_name:
+            self.__open_confirmation_window(db_user, db_user_password, db_ip, db_port, db_name)
         else:
             if db_user == "":
                 self.entry_db_user.configure(text_color="red", placeholder_text=self.lang.error_fill_in_the_fild)
@@ -331,20 +336,23 @@ class SettingsApp(ctk.CTkToplevel):
                 self.entry_db_user_password.configure(text_color="red", placeholder_text=self.lang.error_fill_in_the_fild)
             if db_ip == "":
                 self.entry_server_ip.configure(text_color="red", placeholder_text=self.lang.error_fill_in_the_fild)
+            if db_port == "":
+                self.entry_server_ip.configure(text_color="red", placeholder_text=self.lang.error_fill_in_the_fild)
             if db_name == "":
                 self.entry_db_name.configure(text_color="red", placeholder_text=self.lang.error_fill_in_the_fild)
 
-    def __open_confirmation_window(self, db_user, db_user_password, db_ip, db_name):
-        ConfirmationWindow(self, db_user, db_user_password, db_ip, db_name, self.language_w)
+    def __open_confirmation_window(self, db_user, db_user_password, db_ip, db_port, db_name):
+        ConfirmationWindow(self, db_user, db_user_password, db_ip, db_port, db_name, self.language_w)
 
 class ConfirmationWindow(ctk.CTkToplevel):
-    def __init__(self, parent, db_user, db_user_password, db_ip, db_name, language_ww):
+    def __init__(self, parent, db_user, db_user_password, db_ip, db_port, db_name, language_ww):
         super().__init__(parent)
         self.title("")
         self.db_user = db_user
         self.db_user_password = db_user_password
         self.db_ip = db_ip
         self.db_name = db_name
+        self.db_port = db_port
         self.lang = Locale(language=language_ww)
         self.after(10, lambda: center_window(self, parent))
 
@@ -357,8 +365,8 @@ class ConfirmationWindow(ctk.CTkToplevel):
         self.btn_no.grid(row=1, column=1, padx=20, pady=20, sticky="ew")
 
     def on_yes(self):
-        async_connection_string = f"postgresql+asyncpg://{self.db_user}:{self.db_user_password}@{self.db_ip}/{self.db_name}"
-        sync_connection_string = f"postgresql://{self.db_user}:{self.db_user_password}@{self.db_ip}/{self.db_name}"
+        async_connection_string = f'"postgresql+asyncpg://{self.db_user}:{self.db_user_password}@{self.db_ip}:{self.db_port}/{self.db_name}"'
+        sync_connection_string = f'"postgresql+psycopg2://{self.db_user}:{self.db_user_password}@{self.db_ip}:{self.db_port}/{self.db_name}"'
         self.manage_env_file(async_connection_string, sync_connection_string)
         self.master.destroy()
         self.destroy()
@@ -652,7 +660,7 @@ class App(ctk.CTk):
         label_system_check_password = ctk.CTkLabel(self, text=self.lang.system_check_password)
         label_info_user_inputs = ctk.CTkLabel(self, text=self.lang.info_user_inputs)
         label_real_user_name = ctk.CTkLabel(self, text=self.lang.real_user_name)
-        label_real_user_last_name = ctk.CTkLabel(self, text=self.lang.real_user_email)
+        label_real_user_last_name = ctk.CTkLabel(self, text=self.lang.real_user_last_name)
         label_real_user_post = ctk.CTkLabel(self, text=self.lang.real_user_post)
         label_real_user_email = ctk.CTkLabel(self, text=self.lang.real_user_email)
         label_real_user_phone_number = ctk.CTkLabel(self, text=self.lang.real_user_phone_number)

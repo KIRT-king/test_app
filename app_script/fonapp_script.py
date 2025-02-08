@@ -78,9 +78,19 @@ def main():
         while count < KOL_IMAGES:
             _, img = cap.read()
             imgS = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            current_time = time.time()
             if time.time() - start_time >= INTERVAL:
-                res = CompareWithUser(img)
-                if res is not None:
+                res = CompareWithUser(imgS)
+                if res is None:
+                    if no_face_start_time is None:
+                        no_face_start_time = current_time
+                    elif current_time - no_face_start_time >= 15:
+                        create_log(PATH_TO_LOGS_SAVE, CHECK_FAILED)
+                        cap.release()
+                        import os
+                        os.system("gnome-session-quit --logout --no-prompt")
+                else:
+                    no_face_start_time = None
                     if res[0]:
                         kol += 1
                     else:

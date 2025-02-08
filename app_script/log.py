@@ -18,6 +18,5 @@ def setup_logger(log_path=""):
     )
 
 def create_log(path: str, message: str):
-    if path:
-        setup_logger(path)
+    setup_logger(path)
     logging.info(message)

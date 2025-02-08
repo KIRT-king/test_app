@@ -1,7 +1,8 @@
 from sqlalchemy.future import select
 
 from .models import User
-from .database import Session
+from .database import Session, Base, engine
+
 
 def create_user(username: str, name: str, lastname: str, post: str, email: str, phone_number: str):
     session = Session()
