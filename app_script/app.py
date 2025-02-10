@@ -702,31 +702,32 @@ class App(ctk.CTk):
     def __settings_server_connection(self):
         SettingsApp(self, self.language.get())
 
-    def __check_db_connection(self, database_url, timeout=2):
-        from sqlalchemy import create_engine
-        from sqlalchemy.exc import SQLAlchemyError
-        try:
-            engine = create_engine(database_url, connect_args={'connect_timeout': timeout})
-            with engine.connect() as conn:
-                conn.execute("SELECT 1")
-            return True
-        except SQLAlchemyError:
-            return False
+    # def __check_db_connection(self, database_url, timeout=2):
+    #     from sqlalchemy import create_engine
+    #     from sqlalchemy.exc import SQLAlchemyError
+    #     try:
+    #         engine = create_engine(database_url, connect_args={'connect_timeout': timeout})
+    #         with engine.connect() as conn:
+    #             conn.execute("SELECT 1")
+    #         return True
+    #     except SQLAlchemyError:
+    #         return False
 
     def __check_page_second_reg_corp(self):
         if user_exists(self.entry_vars["system_user_name"].get()):
             show_notification(self, self.lang.error, self.lang.error_user_already_exists)
             return
 
-        load_dotenv()
-        database_url = os.getenv("DATABASE_URL")
-        if not database_url:
-            show_notification(self, self.lang.error,self.lang.error_no_connection_string)
-            return
-
-        if not self.__check_db_connection(database_url):
-            show_notification(self, self.lang.error, self.lang.error_cant_connect)
-            return
+        # load_dotenv()
+        # database_url = os.getenv("DATABASE_URL")
+        # print(database_url)
+        # if not database_url:
+        #     show_notification(self, self.lang.error,self.lang.error_no_connection_string)
+        #     return
+        #
+        # if not self.__check_db_connection(database_url):
+        #     show_notification(self, self.lang.error, self.lang.error_cant_connect)
+        #     return
 
         if validate_and_continue(self):
             self.__page_second_reg_corp()
@@ -744,7 +745,7 @@ class App(ctk.CTk):
             command=self.on_camera_selected
         )
         self.bt_start_scan = ctk.CTkButton(self, text=self.lang.begin, command=self.__toggle_camera)
-        bt_previous_page = ctk.CTkButton(self, text=self.lang.previous_page, command=self.__page_first_reg_local)
+        bt_previous_page = ctk.CTkButton(self, text=self.lang.previous_page, command=self.__page_first_reg_corp)
 
         label_info_scan.grid(row = 0, column = 0, columnspan = 2, padx = (10, 10), pady = (10, 10))
         self.image_label_cv2.grid(row = 1, column = 0, columnspan = 2, padx = (10, 10), pady = (10, 10))

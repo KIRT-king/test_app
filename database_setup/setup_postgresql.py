@@ -100,6 +100,19 @@ def check_connection(connection_string, create_tables_answer: str):
                 print("✅ Успешное подключение к базе данных!")
             try:
                 Base = declarative_base()
+                from sqlalchemy import Column, Integer, String
+                class User(Base):
+                    __tablename__ = "users"
+
+                    id = Column(Integer, primary_key=True, autoincrement=True)
+                    username = Column(String(50), nullable=False, unique=True)
+                    name = Column(String(100), nullable=False)
+                    lastname = Column(String(100), nullable=False)
+                    post = Column(String(150))
+                    email = Column(String(255), nullable=False, unique=True)
+                    phone_number = Column(String(20))
+                    status = Column(String(100), nullable=False)
+                    last_check = Column(String(50), nullable=False)
                 Base.metadata.create_all(engine)
                 print("✅ Таблицы успешно созданы!")
             except Exception as e:
