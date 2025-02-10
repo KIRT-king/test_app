@@ -25,7 +25,6 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from dotenv import load_dotenv
-load_dotenv()
 
 NAME = "KIRT app"
 version = "1.3"
@@ -376,8 +375,7 @@ class ConfirmationWindow(ctk.CTkToplevel):
 
     def manage_env_file(self, async_db_url, sync_db_url):
         try:
-            parent_dir = os.path.dirname(os.getcwd())
-            env_file_path = os.path.join(parent_dir, ".env")
+            env_file_path = os.path.join(os.getcwd(), ".env")
             if not os.path.exists(env_file_path):
                 with open(env_file_path, "w") as env_file:
                     env_file.write(f"DATABASE_URL_ASYNC={async_db_url}\n")
@@ -720,6 +718,7 @@ class App(ctk.CTk):
             show_notification(self, self.lang.error, self.lang.error_user_already_exists)
             return
 
+        load_dotenv()
         database_url = os.getenv("DATABASE_URL")
         if not database_url:
             show_notification(self, self.lang.error,self.lang.error_no_connection_string)

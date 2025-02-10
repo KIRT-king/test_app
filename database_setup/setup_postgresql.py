@@ -92,7 +92,7 @@ def generate_connection_string(user, password, port, db_name, host="localhost"):
 
 
 def check_connection(connection_string, create_tables_answer: str):
-    if create_tables_answer.lower() in ["yes", "y"]:
+    if create_tables_answer.lower() in ["yes", "y", ""]:
         print("🔹 Проверяем подключение к PostgreSQL и создаем таблицы...")
         try:
             engine = create_engine(connection_string)
