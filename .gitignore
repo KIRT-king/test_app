@@ -2,4 +2,4 @@ resources/anti-spoof-mn3.onnx/
 tests/
 .idea/
 tests/test.py
-.env
+app_script/.env

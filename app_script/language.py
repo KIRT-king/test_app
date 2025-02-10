@@ -56,6 +56,8 @@ class Locale:
             self.bt_checking_text = "Проверка..."
             self.loading = "Загрузка"
             self.loading_wait = "Пожалуйста подождите..."
+            self.error_cant_connect = "Невозможно подключиться к базе данных.\nПопробуйте указать данные еще раз."
+            self.error_no_connection_string = 'Вы не задали путь подключения к базе данных.\nПерейдите в меню "Настройки"'
 
         elif language == "en":
             self.label_variant_app = "Choose type of registration"
@@ -113,3 +115,5 @@ class Locale:
             self.bt_checking_text = "Checking..."
             self.loading = "Loading"
             self.loading_wait = "Please wait a moment..."
+            self.error_cant_connect = "It is impossible to connect to the database.\nTry to enter the data again."
+            self.error_no_connection_string = 'You did not specify the connection path to the database.\nGo to the Settings menu'

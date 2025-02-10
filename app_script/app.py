@@ -1,4 +1,3 @@
-#TODO протестировать работу фунций определния камеры, прописать эту функцию в корпаративном окне
 import threading
 
 import customtkinter as ctk
@@ -15,7 +14,6 @@ import json
 import subprocess
 import shutil
 
-
 from language import Locale
 
 from screeninfo import get_monitors
@@ -26,6 +24,8 @@ screen_height = screen_info.height
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+from dotenv import load_dotenv
+load_dotenv()
 
 NAME = "KIRT app"
 version = "1.3"
@@ -704,12 +704,33 @@ class App(ctk.CTk):
     def __settings_server_connection(self):
         SettingsApp(self, self.language.get())
 
+    def __check_db_connection(self, database_url, timeout=2):
+        from sqlalchemy import create_engine
+        from sqlalchemy.exc import SQLAlchemyError
+        try:
+            engine = create_engine(database_url, connect_args={'connect_timeout': timeout})
+            with engine.connect() as conn:
+                conn.execute("SELECT 1")
+            return True
+        except SQLAlchemyError:
+            return False
+
     def __check_page_second_reg_corp(self):
         if user_exists(self.entry_vars["system_user_name"].get()):
             show_notification(self, self.lang.error, self.lang.error_user_already_exists)
-        else:
-            if validate_and_continue(self):
-                self.__page_second_reg_corp()
+            return
+
+        database_url = os.getenv("DATABASE_URL")
+        if not database_url:
+            show_notification(self, self.lang.error,self.lang.error_no_connection_string)
+            return
+
+        if not self.__check_db_connection(database_url):
+            show_notification(self, self.lang.error, self.lang.error_cant_connect)
+            return
+
+        if validate_and_continue(self):
+            self.__page_second_reg_corp()
 
     def __page_second_reg_corp(self):
         for widget in self.winfo_children():
