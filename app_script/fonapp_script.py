@@ -7,6 +7,7 @@ import time
 
 from log import create_log
 
+
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -99,10 +100,20 @@ def main():
                 start_time = time.time()
 
         if kol < 0:
+            import os
             cap.release()
+            env_file_path = os.path.join(os.getcwd(), ".env")
+            if os.path.exists(env_file_path):
+                from db.commands import update_user_last_enter, test_db_connection
+                if test_db_connection():
+                    try:
+                        update_user_last_enter(get_current_user())
+                    except:
+                        os.system("gnome-session-quit --logout --no-prompt")
+                else:
+                    os.system("gnome-session-quit --logout --no-prompt")
             if PATH_TO_LOGS_SAVE != "not":
                 create_log(PATH_TO_LOGS_SAVE, CHECK_FAILED)
-            import os
             os.system("gnome-session-quit --logout --no-prompt")
         else:
             if PATH_TO_LOGS_SAVE != "not":

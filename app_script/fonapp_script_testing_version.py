@@ -75,6 +75,7 @@ def main():
         start_time = time.time()
         count = 0
         kol = 0
+        no_face_start_time = None
 
         user_name = input("Введите имя пользователя для сравнения: ")
         logs_save = input("Введите путь к файлу, в который нужно сохранить логи (press Enter/not/default): ")
@@ -117,6 +118,15 @@ def main():
             print("The owner isn't you!")
         else:
             cap.release()
+            env_file_path = os.path.join(os.getcwd(), ".env")
+            if os.path.exists(env_file_path):
+                from db.commands import update_user_last_enter, test_db_connection
+                print(test_db_connection())
+                try:
+                    print(user_name)
+                    update_user_last_enter(user_name)
+                except:
+                    print("Connect to db!")
             if PATH_TO_LOGS_SAVE != "not":
                 create_log(PATH_TO_LOGS_SAVE, CHECK_SUCCESS)
             print("Owner is similar to you")
