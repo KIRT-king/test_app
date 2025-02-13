@@ -403,6 +403,7 @@ class App(ctk.CTk):
         self.lang = Locale(language="en")
         self.available_cameras = get_camera_names(self)
         if not self.available_cameras:
+            show_notification(self, self.lang.error, self.lang.error_no_camera)
             self.available_cameras = ["Нет доступных камер | There are no cameras available"]
         self.selected_camera = StringVar(value=self.available_cameras[0])
         self.camera_index = 0
@@ -539,6 +540,7 @@ class App(ctk.CTk):
             show_notification(self, self.lang.error, self.lang.error_user_already_exists)
         else:
             if check_validation_fills(self):
+                self.available_cameras = get_camera_names(self)
                 self.__page_second_reg_local()
 
     def __page_second_reg_local(self):
@@ -731,6 +733,7 @@ class App(ctk.CTk):
             return
 
         if validate_and_continue(self):
+            self.available_cameras = get_camera_names(self)
             self.__page_second_reg_corp()
 
     def __page_second_reg_corp(self):

@@ -4,7 +4,7 @@ from sqlalchemy.future import select
 from .models import User
 from .database import Session, Base, engine
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 def create_user(username: str, name: str, lastname: str, post: str, email: str, phone_number: str):
@@ -52,7 +52,7 @@ def check_user_exist(user_name: str, user_email: str):
 def test_db_connection():
     try:
         inspector = inspect(engine)
-        tables = inspector.get_table_names()  # Запрос списка таблиц
+        tables = inspector.get_table_names()
         print(f"✅ Подключение к базе данных успешно! Таблицы: {tables}")
         return True
     except OperationalError as e:
@@ -68,11 +68,9 @@ def update_user_last_enter(user_name: str):
         user = result.scalars().first()
 
         if user:
-            utc_now = datetime.utcnow()
-            moscow_time = utc_now + timedelta(hours=3)
-            formatted_time = moscow_time.strftime("%H:%M %d:%m:%Y")
-
-            user.last_check = formatted_time
+            moscow_tz = timezone(timedelta(hours=3))
+            moscow_time = datetime.now(moscow_tz)
+            user.last_check = str(moscow_time)
             session.commit()
     except Exception as e:
         session.rollback()
