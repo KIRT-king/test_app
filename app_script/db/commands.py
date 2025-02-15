@@ -60,6 +60,7 @@ def test_db_connection():
     except SQLAlchemyError as e:
         return False
 
+
 def update_user_last_enter(user_name: str):
     session = Session()
     try:
@@ -68,8 +69,12 @@ def update_user_last_enter(user_name: str):
         user = result.scalars().first()
 
         if user:
+            utc_now = datetime.utcnow().replace(tzinfo=timezone.utc)
+
             moscow_tz = timezone(timedelta(hours=3))
-            moscow_time = datetime.now(moscow_tz)
+            moscow_time = utc_now.astimezone(moscow_tz)
+
+            # Форматируем время
             user.last_check = str(moscow_time.strftime("%H.%M %d-%m-%Y"))
             session.commit()
     except Exception as e:
