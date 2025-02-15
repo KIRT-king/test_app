@@ -70,7 +70,7 @@ def update_user_last_enter(user_name: str):
         if user:
             moscow_tz = timezone(timedelta(hours=3))
             moscow_time = datetime.now(moscow_tz)
-            user.last_check = str(moscow_time)
+            user.last_check = str(moscow_time.strftime("%H.%M %d-%m-%Y"))
             session.commit()
     except Exception as e:
         session.rollback()
