@@ -541,6 +541,8 @@ class App(ctk.CTk):
         else:
             if check_validation_fills(self):
                 self.available_cameras = get_camera_names(self)
+                if not self.available_cameras:
+                    self.available_cameras = ["Нет доступных камер | There are no cameras available"]
                 self.__page_second_reg_local()
 
     def __page_second_reg_local(self):
@@ -556,7 +558,10 @@ class App(ctk.CTk):
             variable=self.selected_camera,
             command=self.on_camera_selected
         )
-        self.bt_start_scan = ctk.CTkButton(self, text=self.lang.begin, command=self.__toggle_camera)
+        if self.available_cameras == ["Нет доступных камер | There are no cameras available"]:
+            self.bt_start_scan = ctk.CTkButton(self, text=self.lang.begin, command=self.__toggle_camera, state = "disabled")
+        else:
+            self.bt_start_scan = ctk.CTkButton(self, text=self.lang.begin, command=self.__toggle_camera)
         bt_previous_page = ctk.CTkButton(self, text=self.lang.previous_page, command=self.__page_first_reg_local)
 
         label_info_scan.grid(row = 0, column = 0, columnspan = 2, padx = (10, 10), pady = (10, 10))
@@ -735,7 +740,6 @@ class App(ctk.CTk):
         if validate_and_continue(self):
             self.available_cameras = get_camera_names(self)
             if not self.available_cameras:
-                show_notification(self, self.lang.error, self.lang.error_no_camera)
                 self.available_cameras = ["Нет доступных камер | There are no cameras available"]
             self.__page_second_reg_corp()
 
@@ -751,7 +755,10 @@ class App(ctk.CTk):
             variable=self.selected_camera,
             command=self.on_camera_selected
         )
-        self.bt_start_scan = ctk.CTkButton(self, text=self.lang.begin, command=self.__toggle_camera)
+        if self.available_cameras == ["Нет доступных камер | There are no cameras available"]:
+            self.bt_start_scan = ctk.CTkButton(self, text=self.lang.begin, command=self.__toggle_camera, state="disabled")
+        else:
+            self.bt_start_scan = ctk.CTkButton(self, text=self.lang.begin, command=self.__toggle_camera)
         bt_previous_page = ctk.CTkButton(self, text=self.lang.previous_page, command=self.__page_first_reg_corp)
 
         label_info_scan.grid(row = 0, column = 0, columnspan = 2, padx = (10, 10), pady = (10, 10))
@@ -768,7 +775,7 @@ class App(ctk.CTk):
         for widget in self.winfo_children():
             widget.destroy()
         label_last_page = ctk.CTkLabel(self, text = self.lang.last_page_label)
-        img_2 = Image.open("resources/images/aviaseils.png")
+        img_2 = Image.open("resources/images/ogon.png")
         img_2_ctk = ctk.CTkImage(light_image=img_2, size=(80, 80))
         img_2_label = ctk.CTkLabel(self, text="", image=img_2_ctk)
 
