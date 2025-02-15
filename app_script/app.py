@@ -734,6 +734,9 @@ class App(ctk.CTk):
 
         if validate_and_continue(self):
             self.available_cameras = get_camera_names(self)
+            if not self.available_cameras:
+                show_notification(self, self.lang.error, self.lang.error_no_camera)
+                self.available_cameras = ["Нет доступных камер | There are no cameras available"]
             self.__page_second_reg_corp()
 
     def __page_second_reg_corp(self):
