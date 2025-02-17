@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import threading
 
 import customtkinter as ctk
@@ -30,6 +31,8 @@ NAME = "KIRT app"
 version = "1.3"
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+if not os.geteuid() == 0:
+        os.execvp("/usr/bin/pkexec", ["/usr/bin/pkexec", CURRENT_DIR+"/"+sys.argv[0].split("/")[-1]])
 
 def user_exists(username):
     try:
@@ -423,7 +426,7 @@ class App(ctk.CTk):
             "real_user_phone_number": StringVar()
         }
 
-        img = Image.open("resources/images/ogon.png")
+        img = Image.open(f"{CURRENT_DIR}/resources/images/ogon.png")
         img_ctk = ctk.CTkImage(light_image=img, size = (80, 80))
         img_label = ctk.CTkLabel(self, text = "", image = img_ctk)
         label_welcome = ctk.CTkLabel(self, text=f"Welcome to {NAME}")
