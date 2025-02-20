@@ -17,11 +17,6 @@ import shutil
 
 from language import Locale
 
-from screeninfo import get_monitors
-screen_info = get_monitors()[0]
-screen_width = screen_info.width
-screen_height = screen_info.height
-
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -399,7 +394,7 @@ class App(ctk.CTk):
         super().__init__()
         self.title(f"{NAME}")
         self.geometry("400x400")
-        self.scaling = 2
+        self.scaling = 1
         self.cap = None
         self.type = None
         self.language = "en"
@@ -410,8 +405,11 @@ class App(ctk.CTk):
             self.available_cameras = ["Нет доступных камер | There are no cameras available"]
         self.selected_camera = StringVar(value=self.available_cameras[0])
         self.camera_index = 0
-        ctk.set_widget_scaling(self.scaling)
+        # ctk.set_widget_scaling(self.scaling)
         ctk.set_appearance_mode("dark")
+
+        self.screen_width = self.winfo_screenwidth()
+        self.screen_height = self.winfo_screenheight()
 
 
         self.entry_vars = {
@@ -452,17 +450,17 @@ class App(ctk.CTk):
         bt_next_page.grid(row = 6, column = 0, columnspan = 2, pady = (25, 10), padx = (10, 10))
 
     def __set_initial_ui_scaling(self):
-        if screen_width >= 5120 and screen_height >= 2880:
+        print(self.screen_width, self.screen_height)
+        if self.screen_width >= 5120 and self.screen_height >= 2880:
             initial_scaling = "200%"
-        elif screen_width >= 3840 and screen_height >= 2400:
+        elif self.screen_width >= 3840 and self.screen_height >= 2400:
             initial_scaling = "150%"
-        elif screen_width >= 2560 and screen_height >= 1440:
+        elif self.screen_width >= 2560 and self.screen_height >= 1440:
             initial_scaling = "125%"
-        elif screen_width >= 1920 and screen_height >= 1080:
+        elif self.screen_width >= 1920 and self.screen_height >= 1080:
             initial_scaling = "100%"
         else:
             initial_scaling = "80%"
-            self.scaling = 1
 
         self.__ui_scaling_handler(initial_scaling)
         self.ui_scaling.set(initial_scaling)
