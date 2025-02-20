@@ -450,7 +450,6 @@ class App(ctk.CTk):
         bt_next_page.grid(row = 6, column = 0, columnspan = 2, pady = (25, 10), padx = (10, 10))
 
     def __set_initial_ui_scaling(self):
-        print(self.screen_width, self.screen_height)
         if self.screen_width >= 5120 and self.screen_height >= 2880:
             initial_scaling = "200%"
         elif self.screen_width >= 3840 and self.screen_height >= 2400:
