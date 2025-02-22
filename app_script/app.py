@@ -17,11 +17,6 @@ import shutil
 
 from language import Locale
 
-from screeninfo import get_monitors
-screen_info = get_monitors()[0]
-screen_width = screen_info.width
-screen_height = screen_info.height
-
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
