@@ -1,5 +1,4 @@
 import cv2
-from tkinter import messagebox
 import subprocess
 import pickle
 import face_recognition
@@ -35,8 +34,8 @@ def find_active_camera_index():
         except Exception:
             pass
 
-    if CAMERA_ID == 0:
-        messagebox.showerror("Ошибка | Error", "Камера не найдена\nCamera has not been found")
+    # if CAMERA_ID == 0:
+    #     messagebox.showerror("Ошибка | Error", "Камера не найдена\nCamera has not been found")
 
 def get_current_user():
     try:
@@ -119,7 +118,9 @@ def main():
             if PATH_TO_LOGS_SAVE != "not":
                 create_log(PATH_TO_LOGS_SAVE, CHECK_SUCCESS)
             cap.release()
-    except Exception as e:
-        messagebox.showerror("Ошибка | Error", f"Ошибка | Error: {e}")
+    except:
+        pass
+    # except Exception as e:
+    #     messagebox.showerror("Ошибка | Error", f"Ошибка | Error: {e}")
 
 main()
