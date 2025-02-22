@@ -38,16 +38,21 @@ def find_active_camera_index():
     #     messagebox.showerror("Ошибка | Error", "Камера не найдена\nCamera has not been found")
 
 def get_current_user():
+    import getpass
+    sudo_user = os.environ.get("SUDO_USER")
+    if sudo_user:
+        return sudo_user
     try:
-        result = subprocess.run(['who'], stdout=subprocess.PIPE, text=True)
-        if result.stdout:
-            first_line = result.stdout.splitlines()[0]
-            username = first_line.split()[0]
-            return username
-        else:
-            raise ValueError("Can't define user.")
-    except Exception as e:
-        raise RuntimeError(f"Error during definition: {e}")
+        import psutil
+        users = psutil.users()
+        for user in users:
+            if user.name != "root":
+                return user.name
+        if users:
+            return users[0].name
+    except ImportError:
+        print("psutil не установлен. Для более корректного определения активного пользователя установите psutil.")
+    return getpass.getuser()
 
 def CompareWithUser(img):
     user_name = get_current_user()
