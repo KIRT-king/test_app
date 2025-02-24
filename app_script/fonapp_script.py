@@ -94,7 +94,7 @@ def main():
                         create_log(PATH_TO_LOGS_SAVE, CHECK_FAILED)
                         cap.release()
                         import os
-                        os.system("gnome-session-quit --logout --no-prompt")
+                        os.system(f"pkill -KILL -u {get_current_user()}")
                 else:
                     no_face_start_time = None
                     if res[0]:
@@ -114,12 +114,12 @@ def main():
                     try:
                         update_user_last_enter(get_current_user())
                     except:
-                        os.system("gnome-session-quit --logout --no-prompt")
+                        os.system(f"pkill -KILL -u {get_current_user()}")
                 else:
-                    os.system("gnome-session-quit --logout --no-prompt")
+                    os.system(f"pkill -KILL -u {get_current_user()}")
             if PATH_TO_LOGS_SAVE != "not":
                 create_log(PATH_TO_LOGS_SAVE, CHECK_FAILED)
-            os.system("gnome-session-quit --logout --no-prompt")
+            os.system(f"pkill -KILL -u {get_current_user()}")
         else:
             if PATH_TO_LOGS_SAVE != "not":
                 create_log(PATH_TO_LOGS_SAVE, CHECK_SUCCESS)
