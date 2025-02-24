@@ -784,7 +784,7 @@ class App(ctk.CTk):
         for widget in self.winfo_children():
             widget.destroy()
         label_last_page = ctk.CTkLabel(self, text = self.lang.last_page_label)
-        img_2 = Image.open("resources/images/ogon.png")
+        img_2 = Image.open(f"{CURRENT_DIR}/resources/images/ogon.png")
         img_2_ctk = ctk.CTkImage(light_image=img_2, size=(80, 80))
         img_2_label = ctk.CTkLabel(self, text="", image=img_2_ctk)
 
