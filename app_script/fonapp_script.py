@@ -71,7 +71,6 @@ def CompareWithUser(img):
 
 def main():
     try:
-        print("1")
         cap = cv2.VideoCapture(CAMERA_ID)
         if cap.isOpened():
             pass
@@ -81,30 +80,31 @@ def main():
         start_time = time.time()
         count = 0
         kol = 0
-        print("1")
+        no_face_start_time = None
+
         while count < KOL_IMAGES:
             _, img = cap.read()
             imgS = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             current_time = time.time()
             if time.time() - start_time >= INTERVAL:
-                print("2")
                 res = CompareWithUser(imgS)
                 if res is None:
                     if no_face_start_time is None:
-                        print("3")
                         no_face_start_time = current_time
                     elif current_time - no_face_start_time >= 15:
                         create_log(PATH_TO_LOGS_SAVE, CHECK_FAILED)
                         cap.release()
+                        print("face has not been caught for 15 sec")
                         import os
                         os.system(f"pkill -KILL -u {get_current_user()}")
                 else:
-                    print("4")
                     no_face_start_time = None
                     if res[0]:
                         kol += 1
+                        print("good")
                     else:
                         kol -= 1
+                        print("bad")
                     count += 1
                     print(f"kol - {kol}")
                     print(f"count - {count}")
