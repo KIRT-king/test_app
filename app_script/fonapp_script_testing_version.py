@@ -10,7 +10,9 @@ from utils import print_name
 
 import os
 import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+if not os.geteuid() == 0:
+        os.execvp("/usr/bin/pkexec", ["/usr/bin/pkexec", CURRENT_DIR+"/"+sys.argv[0].split("/")[-1]])
 
 
 PATH_TO_ENCODINGS_SAVE = "encodings"
