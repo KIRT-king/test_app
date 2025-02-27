@@ -373,7 +373,7 @@ class ConfirmationWindow(ctk.CTkToplevel):
 
     def manage_env_file(self, async_db_url, sync_db_url):
         try:
-            env_file_path = os.path.join(os.getcwd(), ".env")
+            env_file_path = os.path.join(CURRENT_DIR ,os.getcwd(), ".env")
             if not os.path.exists(env_file_path):
                 with open(env_file_path, "w") as env_file:
                     env_file.write(f"DATABASE_URL_ASYNC={async_db_url}\n")
@@ -643,10 +643,10 @@ class App(ctk.CTk):
                     face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
                     if len(face_encodings) == 1:
                         encoding = face_encodings[0]
-                        if not os.path.exists("encodings"):
-                            os.makedirs("encodings")
+                        if not os.path.exists(f"{CURRENT_DIR}/encodings"):
+                            os.makedirs("{CURRENT_DIR}/encodings")
                         username = self.entry_vars["system_user_name"].get()
-                        file_path = os.path.join("encodings", f"{username}.pkl")
+                        file_path = os.path.join(CURRENT_DIR, "encodings", f"{username}.pkl")
                         with open(file_path, "wb") as f:
                             pickle.dump([encoding], f)
                         self.info_label_cv2.configure(text = self.lang.success_face_recognition, text_color="lime")
