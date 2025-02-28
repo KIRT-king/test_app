@@ -14,6 +14,7 @@ import re
 import json
 import subprocess
 import shutil
+import textwrap
 
 from language import Locale
 
@@ -783,6 +784,38 @@ class App(ctk.CTk):
             self.cap = None
         for widget in self.winfo_children():
             widget.destroy()
+        with open("/etc/systemd/system/kirt.service", "w") as file:
+            service = textwrap.dedent("""\
+                [Unit]
+                Description=Run KIRTapp
+                After=network.target
+
+                [Service]
+                Type=oneshot
+                ExecStart=/usr/bin/python3 /usr/local/bin/KIRTapp/app_script/fonapp_script.py
+                WorkingDirectory=/usr/local/bin/KIRTapp/app_script
+                User=root
+                Group=root
+                StandardOutput=journal
+                StandardError=journal""")
+            file.write(service)
+        with open("/etc/systemd/system/kirt.timer", "w") as file:
+            timer = textwrap.dedent("""\
+                [Unit]
+                Description=Run KIRTapp every 5 minutes
+
+                [Timer]
+                OnBootSec=1min
+                OnUnitActiveSec=5min
+                Unit=kirt.service
+
+                [Install]
+                WantedBy=timers.target""")
+            file.write(timer)
+        # Возможны задержки в отрисовке.
+        os.system("/usr/bin/systemctl daemon-reload")
+        os.system("/usr/bin/systemctl enable kirt.timer")
+        os.system("/usr/bin/systemctl start kirt.timer")
         label_last_page = ctk.CTkLabel(self, text = self.lang.last_page_label)
         img_2 = Image.open(f"{CURRENT_DIR}/resources/images/ogon.png")
         img_2_ctk = ctk.CTkImage(light_image=img_2, size=(80, 80))
