@@ -110,12 +110,12 @@ def main():
                     print(f"count - {count}")
                 start_time = time.time()
 
+        from db.commands import update_user_last_enter, test_db_connection
         if kol < 0:
             import os
             cap.release()
             env_file_path = os.path.join(os.getcwd(), ".env")
             if os.path.exists(env_file_path):
-                from db.commands import update_user_last_enter, test_db_connection
                 if test_db_connection():
                     try:
                         update_user_last_enter(get_current_user())
@@ -128,11 +128,16 @@ def main():
             os.system(f"pkill -KILL -u {get_current_user()}")
         else:
             if PATH_TO_LOGS_SAVE != f"{CURRENT_DIR}/not":
-                create_log(PATH_TO_LOGS_SAVE, CHECK_SUCCESS)
-            cap.release()
-    except:
-        pass
-    # except Exception as e:
-    #     messagebox.showerror("Ошибка | Error", f"Ошибка | Error: {e}")
+                if test_db_connection():
+                    try:
+                        update_user_last_enter(get_current_user())
+                        create_log(PATH_TO_LOGS_SAVE, CHECK_SUCCESS)
+                    except:
+                        create_log(PATH_TO_LOGS_SAVE, CHECK_SUCCESS)
+                else:
+                    create_log(PATH_TO_LOGS_SAVE, CHECK_SUCCESS)
+    except Exception as e:
+        print(e)
+    cap.release()
 
 main()
