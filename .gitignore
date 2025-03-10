@@ -3,3 +3,6 @@ tests/
 .idea/
 tests/test.py
 app_script/.env
+backend
+app
+app_script/fonapp.py
