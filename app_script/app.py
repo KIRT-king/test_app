@@ -19,6 +19,8 @@ import textwrap
 from language import Locale
 
 import sys
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from dotenv import load_dotenv, find_dotenv
@@ -374,7 +376,7 @@ class ConfirmationWindow(ctk.CTkToplevel):
 
     def manage_env_file(self, async_db_url, sync_db_url):
         try:
-            env_file_path = os.path.join(CURRENT_DIR ,os.getcwd(), ".env")
+            env_file_path = os.path.join(CURRENT_DIR, os.getcwd(), ".env")
             if not os.path.exists(env_file_path):
                 with open(env_file_path, "w") as env_file:
                     env_file.write(f"DATABASE_URL_ASYNC={async_db_url}\n")
@@ -719,7 +721,7 @@ class App(ctk.CTk):
     def __settings_server_connection(self):
         SettingsApp(self, self.language.get())
 
-    def __check_db_connection(self, database_url, timeout=2):
+    def __check_db_connection(self, database_url, timeout=10):
         from sqlalchemy import create_engine, inspect
         from sqlalchemy.exc import SQLAlchemyError
         try:
@@ -729,14 +731,14 @@ class App(ctk.CTk):
                 tables = inspector.get_table_names()
             engine.dispose()
             return True
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
+            print(e)
             return False
 
     def __check_page_second_reg_corp(self):
         if user_exists(self.entry_vars["system_user_name"].get()):
             show_notification(self, self.lang.error, self.lang.error_user_already_exists)
             return
-
         load_dotenv(find_dotenv())
         database_url = os.getenv("DATABASE_URL")
         if not database_url:
