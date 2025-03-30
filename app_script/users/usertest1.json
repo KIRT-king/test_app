@@ -1,0 +1,11 @@
+{
+    "system_user_name": "usertest1",
+    "system_user_full_name": "usertest1",
+    "system_password": "usertest_1",
+    "system_check_password": "usertest_1",
+    "real_user_name": "Ivanov",
+    "real_user_last_name": "Ivan",
+    "real_user_post": "Ivanovich",
+    "real_user_email": "ivan@igmail.com",
+    "real_user_phone_number": "+375447898989"
+}
